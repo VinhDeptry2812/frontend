@@ -9,7 +9,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/products")
+    axios.get("https://tttn-1.onrender.com/api/products")
       .then(res => {
         setProducts(res.data);
       })
