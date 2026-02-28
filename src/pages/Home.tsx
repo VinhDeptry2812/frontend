@@ -1,40 +1,29 @@
 import { motion } from "motion/react";
-import { ArrowRight, Hammer, Leaf, Clock, ShieldCheck } from "lucide-react";
+import { ArrowRight, Hammer, Leaf, Clock, ShieldCheck, Import } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 
 export default function Home() {
-  const products = [
-    {
-      id: 1,
-      name: "The Velvet Sofa",
-      color: "Deep Espresso",
-      price: "$4,250",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDFT1aHlSFsxcZAJWNXDZCw9vFLPU0cFxsjwGs2i1VnZYlD9OQIPzHQYA6elVs-hQ_YLsddGa1MUugb2vxnur-t2qGPqlCakGouA0jKK1gsR_vKQwUd5r9HLMRvMF9OcUsDSwsPwET-M6RfPVcjEpPI0bkctRyu4QWtd4hMib9nxyVjrN7Y4pVz9Sg8UTkpX21tkkosM06-7wO76SVXE6LUOz9j7OYQHCPIlJpj5yl9rkAKhSvmK362yORaj7i5p46WhHqd_KKqfb0",
-    },
-    {
-      id: 2,
-      name: "Carrara Marble Table",
-      color: "Signature Marble",
-      price: "$2,800",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBpv8OJ7jDSp_aFonbZrK82TGZvekW7B-yBxP_yUnX52Sb3sUbJ0rG1F7rOq2_UE3vCxWN6jwsxhTfCLscgf4ySW8tl0uMyfGka-pZ0jxio3UQWtUVrVhKXxQvljKhAsQIpHBIf-1xZAr60zS4lu3Z9l23LV0Tkj5znUgL12pkqOAIGae_ErIAiWxKuT-4g24k_9FD6WaB9Ynra6A5MCLDsHUZ67CiNz1JrNiKuNTM8R2ejeQuO29VHzsPuIJB3kJyuPcgJak-k9lo",
-    },
-    {
-      id: 3,
-      name: "Auric Accent Chair",
-      color: "Champagne Gold",
-      price: "$1,450",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCOU1MqWLLzpDKZKk1I5rWg86CUAyL9giJQsxUDSgtQbkGmsm_J0gjJlDo1e-AkepAAMV-SzG8qCP2379nr_MEln0SlW0RGn3ReanHorU-pW-Q0lwZWEB03swYjQb4GDSlOWhE2aPgmW9C2BEX5Oq3rF5CiBuIqrufSjGU38FFaDswJKL2W1KgZDrj0z4PS2kFpK6S1WzXrgZspiNwO3DFpEeaRuchfyQ-aCwJwpUxL7weJgFepDphgxZtS4FGk4GBLkvYKK6mKMYw",
-    },
-    {
-      id: 4,
-      name: "Nordic Oak Set",
-      color: "Natural Oak",
-      price: "$5,600",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBkKXJPOWI6aiqENEQYMuDZxCYFTmwMeIh6-f1bIM1HTzV1msI0Rt0yMXhT2zN1kUD2DKhfmzvQR4s2hG3TeFBqSMeWwwEVStoTWpURkSBjlzGHsAnwuyar21lWdrJlXdG5XWB6jQHYMRjBXHXajKxYdRve2dy40yr8zjo987Wwxa_eGPoj1iLnVXOjjxhbratrCcT1cogQQaPp41l1Kj3CCWiAJJiTYFxbJOgMZeDqbdkQDAsmn6xjmrzwXXnraQ2efQwbmZ_atH8",
-    },
-  ];
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://127.0.0.1:8000/api/products")
+      .then(res => {
+        setProducts(res.data);
+      })
+      .catch(err => console.log(err));
+  }, []);
+
+  if (!products.length) {
+  return <div className="text-center py-20">Loading products...</div>;
+  }
 
   return (
+
+    
+
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center">
@@ -101,7 +90,7 @@ export default function Home() {
                 whileHover={{ y: -10 }}
                 className="group cursor-pointer"
               >
-                <Link to="/product/1">
+                <Link to={`/product/${product.id}`}>
                   <div className="relative aspect-[3/4] overflow-hidden mb-8 bg-primary/5">
                     <img
                       src={product.image}
