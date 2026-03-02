@@ -12,6 +12,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Account, { OrderDetail } from "./pages/Account";
 import { ScrollToTop } from "./components/ScrollToTop";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<Account />} />
             <Route path="/account/order/:id" element={<OrderDetail />} />
+            <Route path="/resetpassword" element={<ResetPassword/>} />
           </Routes>
         </main>
         <Footer />
