@@ -25,11 +25,10 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-        isScrolled || !isHome
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled || !isHome
           ? "bg-white/80 backdrop-blur-md py-4 border-b border-primary/10 shadow-sm"
           : "bg-transparent py-6"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <div className="flex items-center gap-12">
@@ -75,9 +74,16 @@ export function Header() {
                 2
               </span>
             </Link>
-            <Link to="/account" className="text-espresso hover:text-primary transition-colors">
-              <User className="w-5 h-5" />
-            </Link>
+            {localStorage.getItem('token') ? (
+              <Link to="/account" className="text-espresso hover:text-primary transition-colors">
+                <User className="w-5 h-5" />
+              </Link>
+            ) : (
+              <Link to="/login" className="flex items-center gap-2 group">
+                <User className="w-5 h-5 text-espresso group-hover:text-primary transition-colors" />
+                <span className="micro-label font-bold text-[10px] tracking-widest group-hover:text-primary transition-colors">LOGIN</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
