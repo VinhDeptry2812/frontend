@@ -8,7 +8,7 @@ import axios from "axios";
 export default function Home() {
   const [products, setProducts] = useState([]);
 
-  const apiproducts = 'http://127.0.0.1:8000/api/products';
+  const apiproducts = 'https://tttn-1.onrender.com/api/products';
 
   useEffect(() => {
     axios.get(apiproducts)
