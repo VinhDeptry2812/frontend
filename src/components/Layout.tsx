@@ -26,8 +26,8 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled || !isHome
-          ? "bg-white/80 backdrop-blur-md py-4 border-b border-primary/10 shadow-sm"
-          : "bg-transparent py-6"
+        ? "bg-white/80 backdrop-blur-md py-4 border-b border-primary/10 shadow-sm"
+        : "bg-transparent py-6"
         }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
@@ -75,9 +75,28 @@ export function Header() {
               </span>
             </Link>
             {localStorage.getItem('token') ? (
-              <Link to="/account" className="text-espresso hover:text-primary transition-colors">
-                <User className="w-5 h-5" />
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link to="/account" className="text-espresso hover:text-primary transition-colors">
+                  <User className="w-5 h-5" />
+                </Link>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { default: api } = await import("../services/api");
+                      await api.post('/logout');
+                    } catch (err) {
+                      console.error("Logout failed", err);
+                    } finally {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('user');
+                      window.location.href = '/login';
+                    }
+                  }}
+                  className="micro-label font-bold text-[10px] tracking-widest text-espresso hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  LOGOUT
+                </button>
+              </div>
             ) : (
               <Link to="/login" className="flex items-center gap-2 group">
                 <User className="w-5 h-5 text-espresso group-hover:text-primary transition-colors" />
