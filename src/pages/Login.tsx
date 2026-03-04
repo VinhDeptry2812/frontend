@@ -31,8 +31,7 @@ const Login: React.FC = () => {
 
     const handleGoogleLogin = () => {
         // Chuyển hướng tới API redirect của Laravel
-        // Bạn có thể đổi sang link Render nếu cần: https://tttn-1.onrender.com/api/auth/google
-        window.location.href = 'http://localhost:8000/api/auth/google';
+        window.location.href = 'https://tttn-1.onrender.com/api/auth/google';
     };
 
     const handleLogin = async (e: React.FormEvent) => {
