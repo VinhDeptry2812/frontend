@@ -16,7 +16,20 @@ const Login: React.FC = () => {
         const token = searchParams.get('token');
         const errorParam = searchParams.get('error');
 
+        // Nếu có token trên URL, kiểm tra xem có phải đang ở trong Popup không
         if (token) {
+            // Nếu đây là cửa sổ Popup bị mất link opener:
+            // Hãy ghi token vào localStorage để trang chính nhận được và tự đóng mình.
+            if (window.name === 'GoogleLoginPopup' || (window.opener && window.opener !== window)) {
+                localStorage.setItem('google_auth_result', JSON.stringify({
+                    token,
+                    timestamp: new Date().getTime()
+                }));
+                window.close();
+                return;
+            }
+
+            // Nếu là trang chính (hoặc redirect truyền thống)
             localStorage.setItem('token', token);
             setSuccess(true);
             setTimeout(() => {
@@ -29,9 +42,81 @@ const Login: React.FC = () => {
         }
     }, [searchParams, navigate]);
 
+    useEffect(() => {
+        // 1. Lắng nghe qua postMessage (Nhanh nhất)
+        const handleMessage = (event: MessageEvent) => {
+            const allowedOrigins = [
+                'http://localhost:8000',
+                'http://127.0.0.1:8000',
+                'https://tttn-1.onrender.com'
+            ];
+
+            if (!allowedOrigins.includes(event.origin)) return;
+
+            const { token, user, error } = event.data;
+
+            if (token) {
+                localStorage.setItem('token', token);
+                if (user) localStorage.setItem('user', JSON.stringify(user));
+                setSuccess(true);
+                setTimeout(() => {
+                    navigate('/account');
+                }, 1000);
+            } else if (error) {
+                setError('Đăng nhập Google thất bại. Vui lòng thử lại.');
+            }
+        };
+
+        // 2. Lắng nghe qua localStorage (Dự phòng vững chắc nhất nếu mất opener)
+        const handleStorage = (event: StorageEvent) => {
+            if (event.key === 'google_auth_result' && event.newValue) {
+                try {
+                    const data = JSON.parse(event.newValue);
+                    if (data.token) {
+                        localStorage.removeItem('google_auth_result'); // Xóa ngay sau khi nhận
+                        localStorage.setItem('token', data.token);
+                        if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+                        setSuccess(true);
+                        setTimeout(() => navigate('/account'), 1000);
+                    }
+                } catch (e) {
+                    console.error("Parse storage result failed", e);
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        window.addEventListener('storage', handleStorage);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            window.removeEventListener('storage', handleStorage);
+        };
+    }, [navigate]);
+
     const handleGoogleLogin = () => {
-        // Chuyển hướng tới API redirect của Laravel
-        window.location.href = 'https://tttn-1.onrender.com/api/auth/google';
+        const width = 500;
+        const height = 650;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+
+        // Lấy base URL từ axios instance hoặc fallback về local
+        const apiBaseUrl = (api.defaults.baseURL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+        const url = `${apiBaseUrl}/auth/google`;
+
+        // Mở popup
+        const popup = window.open(
+            url,
+            'GoogleLoginPopup',
+            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
+        );
+
+        // Đảm bảo opener được thiết lập (một số trình duyệt cũ hoặc cài đặt bảo mật cao)
+        if (popup) {
+            popup.focus();
+        } else {
+            setError('Trình duyệt đã chặn cửa sổ Popup. Vui lòng cho phép hiện Popup và thử lại.');
+        }
     };
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -40,7 +125,7 @@ const Login: React.FC = () => {
         setError(null);
 
         try {
-            const response = await api.post('https://tttn-1.onrender.com/api/login', { email, password });
+            const response = await api.post('/login', { email, password });
 
             if (response.data.success) {
                 localStorage.setItem('token', response.data.token);
