@@ -1,7 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingBag, User, Search, Heart, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -111,12 +111,37 @@ export function Header() {
 }
 
 export function Footer() {
+  const clickCountRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    clickCountRef.current += 1;
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    if (clickCountRef.current >= 5) {
+      clickCountRef.current = 0;
+      navigate('/admin/login');
+      return;
+    }
+
+    // Reset sau 2 giây nếu không click tiếp
+    timerRef.current = setTimeout(() => {
+      clickCountRef.current = 0;
+    }, 2000);
+  };
+
   return (
     <footer className="bg-espresso text-paper pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 text-primary mb-8">
+            <div
+              className="flex items-center gap-2 text-primary mb-8 cursor-pointer select-none"
+              onClick={handleLogoClick}
+              title="Luxe Interiors"
+            >
               <span className="material-symbols-outlined text-3xl">chair</span>
               <h1 className="font-display text-2xl font-bold tracking-widest text-white">
                 LUXE

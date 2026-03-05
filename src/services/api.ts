@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://tttn-1.onrender.com/api',
+    baseURL: 'https://tttn-pzaa.onrender.com/api', // Production Render
+    // baseURL: 'http://127.0.0.1:8000/api', // Local - bỏ comment khi dev local
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

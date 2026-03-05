@@ -46,9 +46,10 @@ const Login: React.FC = () => {
         // 1. Lắng nghe qua postMessage (Nhanh nhất)
         const handleMessage = (event: MessageEvent) => {
             const allowedOrigins = [
+                'https://tttn-pzaa.onrender.com',
+                // Dev only
                 'http://localhost:8000',
                 'http://127.0.0.1:8000',
-                'https://tttn-1.onrender.com'
             ];
 
             if (!allowedOrigins.includes(event.origin)) return;
@@ -101,7 +102,7 @@ const Login: React.FC = () => {
         const top = window.screen.height / 2 - height / 2;
 
         // Lấy base URL từ axios instance hoặc fallback về local
-        const apiBaseUrl = (api.defaults.baseURL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+        const apiBaseUrl = (api.defaults.baseURL || 'https://tttn-pzaa.onrender.com/api').replace(/\/$/, '');
         const url = `${apiBaseUrl}/auth/google`;
 
         // Mở popup

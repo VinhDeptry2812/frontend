@@ -14,6 +14,7 @@ import Account, { OrderDetail } from "./pages/Account";
 import { ScrollToTop } from "./components/ScrollToTop";
 import ResetPassword from "./pages/ResetPassword";
 import Login from "./pages/Login";
+import AdminLogin from "./pages/AdminLogin";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/account/order/:id" element={<OrderDetail />} />
             <Route path="/resetpassword" element={<ResetPassword />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
           </Routes>
         </main>
         <Footer />
