@@ -8,23 +8,43 @@ import axios from "axios";
 export default function Home() {
   const [products, setProducts] = useState([]);
 
-  const apiproducts = 'https://tttn-pzaa.onrender.com/api/products';
+  const [isLoading, setIsLoading] = useState(true);
+
+  const apiproducts = 'https://tttn-1.onrender.com/api/products';
 
   useEffect(() => {
+    setIsLoading(true);
     axios.get(apiproducts)
       .then(res => {
-        setProducts(res.data);
+        // Laravel cursorPaginate trả về dữ liệu trong res.data.data
+        setProducts(res.data.data || []);
+        setIsLoading(false);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.error("Fetch products failed:", err);
+        setIsLoading(false);
+      });
   }, []);
 
-  if (!products.length) {
-  return <div className="text-center py-20">Loading products...</div>;
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-paper">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="micro-label text-slate-500 animate-pulse">Refining your experience...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Nếu không có sản phẩm nhưng đã load xong
+  if (!products.length && !isLoading) {
+    return <div className="text-center py-20 bg-paper">No products available at the moment.</div>;
   }
 
   return (
 
-    
+
 
     <div className="overflow-hidden">
       {/* Hero Section */}
@@ -95,7 +115,7 @@ export default function Home() {
                 <Link to={`/product/${product.id}`}>
                   <div className="relative aspect-[3/4] overflow-hidden mb-8 bg-primary/5">
                     <img
-                      src={product.image}
+                      src={product.image_url ? `https://tttn-1.onrender.com/storage/${product.image_url}` : 'https://placehold.co/400x500?text=No+Image'}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
@@ -106,8 +126,10 @@ export default function Home() {
                     </div>
                   </div>
                   <h4 className="font-display text-xl mb-2">{product.name}</h4>
-                  <p className="micro-label text-slate-400 mb-3">{product.color}</p>
-                  <p className="text-primary font-body font-bold">{product.price}</p>
+                  <p className="micro-label text-slate-400 mb-3">{product.material || 'Premium Quality'}</p>
+                  <p className="text-primary font-body font-bold">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.sale_price ?? product.base_price)}
+                  </p>
                 </Link>
               </motion.div>
             ))}
