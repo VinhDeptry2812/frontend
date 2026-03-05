@@ -137,7 +137,7 @@ export default function Catalog() {
                   <Link to={`/product/${product.id}`}>
                     <div className="relative aspect-[4/5] overflow-hidden bg-primary/5 mb-8">
                       <img
-                        src={product.image_url ? `https://tttn-pzaa.onrender.com/storage/${product.image_url}` : 'https://placehold.co/400x500?text=No+Image'}
+                        src={product.image_url ? `https://tttn-1.onrender.com/storage/${product.image_url}` : 'https://placehold.co/400x500?text=No+Image'}
                         alt={product.name}
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                       />
