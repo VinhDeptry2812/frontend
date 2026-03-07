@@ -8,6 +8,7 @@ import { Catalog } from './pages/Catalog';
 import { ProductDetail } from './pages/ProductDetail';
 import { Auth } from './pages/Auth';
 import { ResetPassword } from './pages/ResetPassword';
+import { User } from './pages/User';
 import { Product, CartItem } from './types';
 
 const App: React.FC = () => {
@@ -58,6 +59,7 @@ const App: React.FC = () => {
       <div className="min-h-screen flex flex-col">
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/user" element={<User />} />
           <Route
             path="*"
             element={
