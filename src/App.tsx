@@ -58,8 +58,6 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen flex flex-col">
         <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/user" element={<User />} />
           <Route
             path="*"
             element={
@@ -74,6 +72,8 @@ const App: React.FC = () => {
                     <Route path="/" element={<Home onAddToCart={addToCart} />} />
                     <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
                     <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/user" element={<User />} />
                   </Routes>
                 </main>
                 <Footer />
