@@ -13,7 +13,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
     const [loading, setLoading] = useState(false);
 
     const handleGoogleLogin = () => {
-        window.location.href = "https://tttn-1.onrender.com/api/auth/google";
+        window.location.href = `${api.defaults.baseURL}/auth/google`;
     };
 
     const handleLogin = async (e: React.FormEvent) => {
