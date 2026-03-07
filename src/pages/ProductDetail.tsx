@@ -38,7 +38,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ onAddToCart }) => 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-32">
           {/* Images */}
           <div className="space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="rounded-3xl overflow-hidden aspect-[4/5] bg-slate-100"
@@ -82,11 +82,10 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ onAddToCart }) => 
                     <button
                       key={finish}
                       onClick={() => setSelectedFinish(finish)}
-                      className={`px-6 py-3 rounded-xl text-sm font-medium transition-all border ${
-                        selectedFinish === finish 
-                          ? 'border-primary bg-primary/5 text-primary' 
+                      className={`px-6 py-3 rounded-xl text-sm font-medium transition-all border ${selectedFinish === finish
+                          ? 'border-primary bg-primary/5 text-primary'
                           : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       {finish}
                     </button>
@@ -96,14 +95,14 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ onAddToCart }) => 
 
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-4 border border-slate-200 rounded-full px-4 py-2">
-                  <button 
+                  <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                     className="p-1 hover:bg-slate-50 rounded-full transition-colors"
                   >
                     <Minus size={18} />
                   </button>
                   <span className="text-lg font-bold w-8 text-center">{quantity}</span>
-                  <button 
+                  <button
                     onClick={() => setQuantity(q => q + 1)}
                     className="p-1 hover:bg-slate-50 rounded-full transition-colors"
                   >
@@ -121,7 +120,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({ onAddToCart }) => 
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => onAddToCart(product, selectedFinish)}
               className="w-full bg-primary text-white py-5 rounded-full font-bold text-lg hover:bg-blue-700 transition-all shadow-xl shadow-primary/20 mb-12"
             >
