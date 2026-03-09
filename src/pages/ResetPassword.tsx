@@ -8,9 +8,9 @@ import api from '../services/api';
 export const ResetPassword: React.FC = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+    const emailFromUrl = searchParams.get('email');
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -18,12 +18,12 @@ export const ResetPassword: React.FC = () => {
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!token) {
-            alert("Đường dẫn khôi phục không hợp lệ hoặc đã hết hạn.");
+        if (!token || !emailFromUrl) {
+            alert("Đường dẫn khôi phục không hợp lệ hoặc thiếu thông tin email.");
             return;
         }
 
-        if (!email || !password || !confirmPassword) {
+        if (!password || !confirmPassword) {
             alert("Vui lòng nhập đầy đủ thông tin");
             return;
         }
@@ -35,11 +35,11 @@ export const ResetPassword: React.FC = () => {
 
         setLoading(true);
         try {
-            // Assume the backend accepts token via body
+            // Updated body parameters: email, token, password, password_confirmation
             const response = await api.post("/reset-password", {
-                email,
-                token,
-                password,
+                email: emailFromUrl,
+                token: token,
+                password: password,
                 password_confirmation: confirmPassword
             });
 
@@ -94,27 +94,13 @@ export const ResetPassword: React.FC = () => {
                             <h1 className="text-3xl font-bold mb-2">Reset Password</h1>
                             <p className="text-slate-400 mb-8">Please enter your new password below.</p>
 
-                            {!token ? (
+                            {!token || !emailFromUrl ? (
                                 <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm mb-6">
-                                    Token không hợp lệ. Vui lòng kiểm tra lại đường dẫn trong email của bạn.
+                                    Đường dẫn không hợp lệ. Vui lòng kiểm tra lại email của bạn.
                                 </div>
                             ) : null}
 
                             <form className="space-y-6" onSubmit={handleResetPassword}>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Email Address</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                        <input
-                                            type="email"
-                                            placeholder="name@example.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                            className="w-full bg-surface-dark border border-slate-800 rounded-xl py-4 pl-12 pr-6 outline-none focus:ring-1 focus:ring-primary transition-all"
-                                        />
-                                    </div>
-                                </div>
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">New Password</label>
                                     <div className="relative">
@@ -143,7 +129,7 @@ export const ResetPassword: React.FC = () => {
                                         />
                                     </div>
                                 </div>
-                                <button type="submit" disabled={loading || !token} className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
+                                <button type="submit" disabled={loading || !token || !emailFromUrl} className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
                                     {loading ? "Đang xử lý..." : "Reset Password"}
                                     {!loading && <ArrowRight size={18} />}
                                 </button>
