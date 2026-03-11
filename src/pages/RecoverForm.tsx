@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, ArrowRight } from 'lucide-react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 interface RecoverFormProps {
     setMode: (mode: 'login' | 'register' | 'recover') => void;
@@ -10,27 +11,28 @@ interface RecoverFormProps {
 export const RecoverForm: React.FC<RecoverFormProps> = ({ setMode }) => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const { showNotification } = useNotification();
 
     const handleRecover = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email) {
-            alert("Vui lòng nhập email của bạn");
+            showNotification("Vui lòng nhập email của bạn", "error");
             return;
         }
 
         setLoading(true);
         try {
             const response = await api.post("/forgot-password", { email });
-            alert(response.data?.message || "Đã gửi hướng dẫn khôi phục mật khẩu. Vui lòng kiểm tra email.");
+            showNotification(response.data?.message || "Đã gửi hướng dẫn khôi phục mật khẩu. Vui lòng kiểm tra email.", "success");
             setMode("login");
             setEmail("");
         } catch (error: any) {
             console.error("Lỗi gửi yêu cầu khôi phục:", error);
             if (error.response) {
-                alert(error.response.data?.message || "Gửi yêu cầu thất bại");
+                showNotification(error.response.data?.message || "Gửi yêu cầu thất bại", "error");
             } else {
-                alert("Không kết nối được server");
+                showNotification("Không kết nối được server", "error");
             }
         } finally {
             setLoading(false);

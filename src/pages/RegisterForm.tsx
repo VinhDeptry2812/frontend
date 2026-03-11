@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 interface RegisterFormProps {
     setMode: (mode: 'login' | 'register' | 'recover') => void;
@@ -13,17 +14,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
+    const { showNotification } = useNotification();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!name || !email || !password || !confirmPassword) {
-            alert("Vui lòng nhập đầy đủ thông tin");
+            showNotification("Vui lòng nhập đầy đủ thông tin", "error");
             return;
         }
 
         if (password !== confirmPassword) {
-            alert("Mật khẩu xác nhận không khớp");
+            showNotification("Mật khẩu xác nhận không khớp", "error");
             return;
         }
 
@@ -36,7 +38,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
                 password_confirmation: confirmPassword
             });
 
-            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+            showNotification("Đăng ký thành công! Vui lòng đăng nhập.", "success");
             setMode("login");
             // Optional: clear fields
             setName("");
@@ -46,9 +48,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
         } catch (error: any) {
             console.error("Lỗi đăng ký:", error);
             if (error.response) {
-                alert(error.response.data?.message || "Đăng ký thất bại");
+                showNotification(error.response.data?.message || "Đăng ký thất bại", "error");
             } else {
-                alert("Không kết nối được server");
+                showNotification("Không kết nối được server", "error");
             }
         } finally {
             setLoading(false);

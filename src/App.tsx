@@ -11,6 +11,8 @@ import { ResetPassword } from './pages/ResetPassword';
 import { User } from './pages/User';
 import { Product, CartItem } from './types';
 
+import { NotificationProvider } from './context/NotificationContext';
+
 const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -55,42 +57,48 @@ const App: React.FC = () => {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar
-                  cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-                  onOpenCart={() => setIsCartOpen(true)}
-                />
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/" element={<Home onAddToCart={addToCart} />} />
-                    <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
-                    <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/user" element={<User />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </>
-            }
-          />
-        </Routes>
+    <NotificationProvider>
 
-        <CartSidebar
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          items={cartItems}
-          onUpdateQuantity={updateQuantity}
-          onRemove={removeFromCart}
-        />
-      </div>
-    </Router>
+      <Router>
+
+        <div className="min-h-screen flex flex-col">
+
+
+          <Routes>
+            <Route path="/users" element={<User />} />
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar
+                    cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                    onOpenCart={() => setIsCartOpen(true)}
+                  />
+                  <main className="flex-grow">
+                    <Routes>
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/" element={<Home onAddToCart={addToCart} />} />
+                      <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
+                      <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+                      <Route path="/auth" element={<Auth />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+          </Routes>
+
+          <CartSidebar
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            items={cartItems}
+            onUpdateQuantity={updateQuantity}
+            onRemove={removeFromCart}
+          />
+        </div>
+      </Router>
+    </NotificationProvider>
   );
 };
 

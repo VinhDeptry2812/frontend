@@ -1,15 +1,16 @@
-//Chưa test
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 export const ResetPassword: React.FC = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
     const emailFromUrl = searchParams.get('email');
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,17 +20,17 @@ export const ResetPassword: React.FC = () => {
         e.preventDefault();
 
         if (!token || !emailFromUrl) {
-            alert("Đường dẫn khôi phục không hợp lệ hoặc thiếu thông tin email.");
+            showNotification("Đường dẫn khôi phục không hợp lệ hoặc thiếu thông tin email.", "error");
             return;
         }
 
         if (!password || !confirmPassword) {
-            alert("Vui lòng nhập đầy đủ thông tin");
+            showNotification("Vui lòng nhập đầy đủ thông tin", "error");
             return;
         }
 
         if (password !== confirmPassword) {
-            alert("Mật khẩu xác nhận không khớp");
+            showNotification("Mật khẩu xác nhận không khớp", "error");
             return;
         }
 
@@ -43,15 +44,15 @@ export const ResetPassword: React.FC = () => {
                 password_confirmation: confirmPassword
             });
 
-            alert(response.data?.message || "Đặt lại mật khẩu thành công!");
+            showNotification(response.data?.message || "Đặt lại mật khẩu thành công!", "success");
             // Redirect to login page
             navigate('/auth');
         } catch (error: any) {
             console.error("Lỗi đặt lại mật khẩu:", error);
             if (error.response) {
-                alert(error.response.data?.message || "Đặt lại mật khẩu thất bại");
+                showNotification(error.response.data?.message || "Đặt lại mật khẩu thất bại", "error");
             } else {
-                alert("Không kết nối được server");
+                showNotification("Không kết nối được server", "error");
             }
         } finally {
             setLoading(false);

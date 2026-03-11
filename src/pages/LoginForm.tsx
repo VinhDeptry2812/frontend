@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, ArrowRight, Facebook, Chrome } from 'lucide-react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 interface LoginFormProps {
     setMode: (mode: 'login' | 'register' | 'recover') => void;
@@ -11,6 +12,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const { showNotification } = useNotification();
 
     const handleGoogleLogin = () => {
         window.location.href = `${api.defaults.baseURL}/auth/google`;
@@ -20,7 +22,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
         e.preventDefault();
 
         if (!email || !password) {
-            alert("Vui lòng nhập email và mật khẩu");
+            showNotification("Vui lòng nhập email và mật khẩu", "error");
             return;
         }
 
@@ -31,7 +33,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
                 password: password
             });
 
-            alert("Đăng nhập thành công");
+            showNotification("Đăng nhập thành công", "success");
 
             const token = response.data?.token || response.data?.access_token;
             if (token) {
@@ -42,9 +44,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
         } catch (error: any) {
             console.error("Lỗi đăng nhập:", error);
             if (error.response) {
-                alert(error.response.data?.message || "Sai thông tin đăng nhập");
+                showNotification(error.response.data?.message || "Sai thông tin đăng nhập", "error");
             } else {
-                alert("Không kết nối được server");
+                showNotification("Không kết nối được server", "error");
             }
         } finally {
             setLoading(false);
