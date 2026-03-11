@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Search, Menu, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
   cartCount: number;
@@ -12,6 +13,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -70,8 +72,16 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
           <button className="p-2 text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
             <Search size={20} />
           </button>
-          <Link to="/auth" className="p-2 text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
+          <Link 
+            to={user ? "/profile" : "/auth"} 
+            className="flex items-center gap-2 p-2 text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors group"
+          >
             <User size={20} />
+            {user && (
+              <span className="text-xs font-bold hidden md:block group-hover:text-primary transition-colors">
+                {user.name}
+              </span>
+            )}
           </Link>
           <button 
             onClick={onOpenCart}
@@ -123,8 +133,12 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
                   </Link>
                 ))}
                 <hr className="border-slate-100 dark:border-slate-800" />
-                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-medium">
-                  Account
+                <Link 
+                  to={user ? "/profile" : "/auth"} 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="text-xl font-medium"
+                >
+                  {user ? `Hi, ${user.name}` : "Account"}
                 </Link>
               </div>
             </motion.div>

@@ -9,9 +9,12 @@ import { ProductDetail } from './pages/ProductDetail';
 import { Auth } from './pages/Auth';
 import { ResetPassword } from './pages/ResetPassword';
 import { User } from './pages/User';
+import { Profile } from './pages/Profile';
+import { EditProfile } from './pages/EditProfile';
 import { Product, CartItem } from './types';
 
 import { NotificationProvider } from './context/NotificationContext';
+import { AuthProvider } from './context/AuthContext';
 
 const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -24,6 +27,8 @@ const App: React.FC = () => {
       localStorage.setItem('token', token);
       // Clean up the URL
       window.history.replaceState({}, document.title, window.location.pathname);
+      // Reload to let AuthProvider pick up the token
+      window.location.reload();
     }
   }, []);
 
@@ -58,46 +63,46 @@ const App: React.FC = () => {
 
   return (
     <NotificationProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col">
+            <Routes>
+              <Route path="/users" element={<User />} />
+              <Route
+                path="*"
+                element={
+                  <>
+                    <Navbar
+                      cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                      onOpenCart={() => setIsCartOpen(true)}
+                    />
+                    <main className="flex-grow">
+                      <Routes>
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/" element={<Home onAddToCart={addToCart} />} />
+                        <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
+                        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/profile/edit" element={<EditProfile />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                  </>
+                }
+              />
+            </Routes>
 
-      <Router>
-
-        <div className="min-h-screen flex flex-col">
-
-
-          <Routes>
-            <Route path="/users" element={<User />} />
-            <Route
-              path="*"
-              element={
-                <>
-                  <Navbar
-                    cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-                    onOpenCart={() => setIsCartOpen(true)}
-                  />
-                  <main className="flex-grow">
-                    <Routes>
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/" element={<Home onAddToCart={addToCart} />} />
-                      <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
-                      <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-                      <Route path="/auth" element={<Auth />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </>
-              }
+            <CartSidebar
+              isOpen={isCartOpen}
+              onClose={() => setIsCartOpen(false)}
+              items={cartItems}
+              onUpdateQuantity={updateQuantity}
+              onRemove={removeFromCart}
             />
-          </Routes>
-
-          <CartSidebar
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            items={cartItems}
-            onUpdateQuantity={updateQuantity}
-            onRemove={removeFromCart}
-          />
-        </div>
-      </Router>
+          </div>
+        </Router>
+      </AuthProvider>
     </NotificationProvider>
   );
 };

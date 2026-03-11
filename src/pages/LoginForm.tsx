@@ -18,6 +18,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
         window.location.href = `${api.defaults.baseURL}/auth/google`;
     };
 
+    const handleFacebookLogin = () => {
+        window.location.href = `${api.defaults.baseURL}/auth/facebook`;
+    };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -115,7 +119,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
                         <Chrome size={18} />
                         <span className="text-sm font-bold">Google</span>
                     </button>
-                    <button className="flex items-center justify-center gap-3 bg-surface-dark border border-slate-800 py-3 rounded-xl hover:bg-slate-800 transition-colors">
+                    <button 
+                        type="button" 
+                        onClick={handleFacebookLogin} 
+                        className="flex items-center justify-center gap-3 bg-surface-dark border border-slate-800 py-3 rounded-xl hover:bg-slate-800 transition-colors"
+                    >
                         <Facebook size={18} />
                         <span className="text-sm font-bold">Facebook</span>
                     </button>
