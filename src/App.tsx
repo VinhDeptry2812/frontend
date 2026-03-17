@@ -11,6 +11,8 @@ import { ResetPassword } from './pages/ResetPassword';
 import { User } from './pages/User';
 import { Profile } from './pages/Profile';
 import { EditProfile } from './pages/EditProfile';
+import { AddAddress } from './pages/AddAddress';
+import { EditAddress } from './pages/EditAddress';
 import { Product, CartItem } from './types';
 
 import { NotificationProvider } from './context/NotificationContext';
@@ -85,6 +87,8 @@ const App: React.FC = () => {
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/profile/edit" element={<EditProfile />} />
+                        <Route path="/profile/address/new" element={<AddAddress />} />
+                        <Route path="/profile/address/edit/:id" element={<EditAddress />} />
                       </Routes>
                     </main>
                     <Footer />

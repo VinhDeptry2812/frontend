@@ -13,8 +13,8 @@ export const Catalog: React.FC<CatalogProps> = ({ onAddToCart }) => {
   const [activeCategory, setActiveCategory] = useState('All');
   const categories = ['All', 'Seating', 'Tables', 'Lighting', 'Storage', 'Decor'];
 
-  const filteredProducts = activeCategory === 'All' 
-    ? PRODUCTS 
+  const filteredProducts = activeCategory === 'All'
+    ? PRODUCTS
     : PRODUCTS.filter(p => p.category === activeCategory);
 
   return (
@@ -24,18 +24,17 @@ export const Catalog: React.FC<CatalogProps> = ({ onAddToCart }) => {
         <div className="mb-16">
           <p className="text-xs uppercase tracking-widest font-bold text-primary mb-4">Collections</p>
           <h1 className="text-5xl md:text-6xl font-serif font-bold tracking-tight mb-8">All Masterpieces</h1>
-          
+
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 border-y border-slate-100 py-8">
             <div className="flex flex-wrap gap-4">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                    activeCategory === cat 
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                  className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === cat
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>
@@ -45,9 +44,9 @@ export const Catalog: React.FC<CatalogProps> = ({ onAddToCart }) => {
             <div className="flex items-center gap-6 w-full lg:w-auto">
               <div className="relative flex-1 lg:w-64">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search collection..." 
+                <input
+                  type="text"
+                  placeholder="Search collection..."
                   className="w-full bg-slate-100 border-none rounded-full py-3 pl-12 pr-6 text-sm focus:ring-1 focus:ring-primary outline-none"
                 />
               </div>

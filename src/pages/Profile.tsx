@@ -11,7 +11,8 @@ import {
   Camera,
   ChevronRight,
   Settings,
-  Calendar
+  Calendar,
+  Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -31,9 +32,27 @@ interface UserProfile {
   updated_at?: string;
 }
 
+interface UserAddress {
+  id: number;
+  user_id: number;
+  receiver_name: string;
+  receiver_phone: string;
+  province_id: number;
+  district_id: number;
+  ward_id: number;
+  address_detail: string;
+  is_default: boolean;
+  type: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export const Profile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const { showNotification } = useNotification();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -68,8 +87,43 @@ export const Profile: React.FC = () => {
       }
     };
 
+    const fetchAddresses = async () => {
+      try {
+        setLoadingAddresses(true);
+        const response = await api.get('/user/addresses');
+        // Handle array response directly or inside data envelope
+        const addressesData = Array.isArray(response.data) ? response.data : 
+                             (Array.isArray(response.data?.data) ? response.data.data : []);
+        setAddresses(addressesData);
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+        // showNotification('Không thể tải thông tin địa chỉ', 'error');
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+
     fetchProfile();
+    fetchAddresses();
   }, [showNotification]);
+
+  const handleDeleteAddress = async (id: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+      return;
+    }
+
+    try {
+      setDeletingId(id);
+      await api.delete(`/user/addresses/${id}`);
+      setAddresses(prev => prev.filter(address => address.id !== id));
+      showNotification('Đã xóa địa chỉ thành công', 'success');
+    } catch (error) {
+      console.error('Lỗi khi xóa địa chỉ:', error);
+      showNotification('Không thể xóa địa chỉ. Vui lòng thử lại sau', 'error');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -228,6 +282,80 @@ export const Profile: React.FC = () => {
                   status="Processing" 
                   amount="$2,100.00" 
                 />
+              </div>
+            </motion.div>
+
+            {/* My Addresses Section */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
+            >
+              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h3 className="text-xl font-serif font-bold">My Addresses</h3>
+                <button 
+                  onClick={() => navigate('/profile/address/new')}
+                  className="text-sm font-bold text-primary hover:underline flex items-center gap-1"
+                >
+                  Add New
+                </button>
+              </div>
+              
+              <div className="p-6 divide-y divide-slate-100 dark:divide-slate-800">
+                {loadingAddresses ? (
+                  <div className="py-8 flex justify-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : addresses.length === 0 ? (
+                  <div className="py-8 text-center text-slate-500">
+                    Bạn chưa có địa chỉ nào.
+                  </div>
+                ) : (
+                  addresses.map((address) => (
+                    <div key={address.id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={18} className="text-primary mt-0.5" />
+                          <h4 className="font-bold">{address.receiver_name}</h4>
+                          <span className="text-sm text-slate-500">| {address.receiver_phone}</span>
+                          {address.is_default && (
+                            <span className="ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30">
+                              Default
+                            </span>
+                          )}
+                          <span className="ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            {address.type}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => navigate(`/profile/address/edit/${address.id}`)}
+                            className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
+                            disabled={deletingId === address.id}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteAddress(address.id)}
+                            disabled={deletingId === address.id}
+                            className="text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-full transition-colors disabled:opacity-50"
+                            title="Xóa địa chỉ"
+                          >
+                            {deletingId === address.id ? (
+                               <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                               <Trash2 size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm ml-7">
+                        {address.address_detail}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </motion.div>
 
