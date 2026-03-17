@@ -250,46 +250,11 @@ export const Profile: React.FC = () => {
               </div>
             </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
-            >
-              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h3 className="text-xl font-serif font-bold">Recent Orders</h3>
-                <button className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
-                  View All <ChevronRight size={16} />
-                </button>
-              </div>
-              
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                <OrderItem 
-                  id="#ORD-9821" 
-                  date="Mar 08, 2024" 
-                  status="Delivered" 
-                  amount="$1,250.00" 
-                />
-                <OrderItem 
-                  id="#ORD-9754" 
-                  date="Feb 24, 2024" 
-                  status="In Transit" 
-                  amount="$890.00" 
-                />
-                <OrderItem 
-                  id="#ORD-9612" 
-                  date="Jan 30, 2024" 
-                  status="Processing" 
-                  amount="$2,100.00" 
-                />
-              </div>
-            </motion.div>
-
             {/* My Addresses Section */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.1 }}
               className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
             >
               <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
@@ -356,6 +321,41 @@ export const Profile: React.FC = () => {
                     </div>
                   ))
                 )}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
+            >
+              <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <h3 className="text-xl font-serif font-bold">Recent Orders</h3>
+                <button className="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+                  View All <ChevronRight size={16} />
+                </button>
+              </div>
+              
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                <OrderItem 
+                  id="#ORD-9821" 
+                  date="Mar 08, 2024" 
+                  status="Delivered" 
+                  amount="$1,250.00" 
+                />
+                <OrderItem 
+                  id="#ORD-9754" 
+                  date="Feb 24, 2024" 
+                  status="In Transit" 
+                  amount="$890.00" 
+                />
+                <OrderItem 
+                  id="#ORD-9612" 
+                  date="Jan 30, 2024" 
+                  status="Processing" 
+                  amount="$2,100.00" 
+                />
               </div>
             </motion.div>
 
