@@ -35,15 +35,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const response = await api.get('/me');
-      if (response.data.success && response.data.user) {
-        setUser(response.data.user);
+      const fetchUserData = (response.data.success && response.data.user) ? response.data.user : (response.data.user || response.data);
+
+      if (fetchUserData) {
+        // Kiểm tra ngay lập tức nếu dữ liệu trả về báo tài khoản bị vô hiệu hóa
+        const isActive = fetchUserData.is_active;
+        if (isActive === 0 || isActive === false || String(isActive) === '0' || String(isActive) === 'false') {
+          console.warn("Tài khoản đã bị khóa bởi Admin! Bắt buộc văng...");
+          localStorage.removeItem('token');
+          setUser(null);
+          
+          // Thêm thông báo nếu có thể hoặc đẩy thẳng về login (dùng window.location.href để xóa mảng bộ nhớ SPA)
+          window.location.href = '/auth';
+          return;
+        }
+
+        setUser(fetchUserData);
       } else {
-        setUser(response.data.user || response.data);
+        setUser(null);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
-      // Nếu token hết hạn hoặc lỗi, có thể xóa token ở đây
-      // localStorage.removeItem('token');
+      localStorage.removeItem('token');
       setUser(null);
     } finally {
       setLoading(false);

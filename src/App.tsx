@@ -13,6 +13,12 @@ import { Profile } from './pages/Profile';
 import { EditProfile } from './pages/EditProfile';
 import { AddAddress } from './pages/AddAddress';
 import { EditAddress } from './pages/EditAddress';
+import { AdminLogin } from './pages/AdminLogin';
+import { AdminLayout } from './components/AdminLayout';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminEmployees } from './pages/admin/AdminEmployees';
+import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminUsers } from './pages/admin/AdminUsers';
 import { Product, CartItem } from './types';
 
 import { NotificationProvider } from './context/NotificationContext';
@@ -70,6 +76,11 @@ const App: React.FC = () => {
           <div className="min-h-screen flex flex-col">
             <Routes>
               <Route path="/users" element={<User />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+              <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
+              <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
+              <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
               <Route
                 path="*"
                 element={
