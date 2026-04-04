@@ -32,3 +32,22 @@
   background: rgba(15, 44, 189, 0.2);
   border-radius: 10px;
 }
+
+/* Animations cho Admin Login Light Mode */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+  33% { transform: translateY(-20px) translateX(10px) scale(1.1); }
+  66% { transform: translateY(10px) translateX(-20px) scale(0.9); }
+}
+
+.animate-float-slow {
+  animation: float 15s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float 20s ease-in-out infinite reverse;
+}
+
+.glass-card {
+  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+}

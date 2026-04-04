@@ -19,22 +19,33 @@ api.interceptors.request.use((config) => {
 
 // Thêm interceptor BẮT LỖI RESPONSES (Quan trọng để FORCE LOGOUT)
 api.interceptors.response.use(
-  (response) => {
-      return response;
-  },
-  (error) => {
-      // Nếu tài khoản bị Admin khóa, Backend sẽ trả về 401 Unauthorized hoặc 403 Forbidden
-      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          console.warn("Phiên kết thúc vì tài khoản bị khóa hoặc token hết hạn!");
-          // Xóa token khỏi máy người bị khóa
-          localStorage.removeItem('token');
-          
-          // Điều hướng văng thẳng ra ngoài màn hình login
-          // (Dùng window.location vì không nằm trong context Component React)
-          window.location.href = '/auth'; // Đường dẫn tới trang đăng nhập
-      }
-      return Promise.reject(error);
-  }
+    (response) => {
+        return response;
+    },
+    (error) => {
+        // Nếu gặp lỗi 401 (Unauthorized) hoặc 403 (Forbidden) - Có nghĩa là Token không hợp lệ hoặc hết hạn
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn("Phiên làm việc hết hạn hoặc không có quyền truy cập. Hệ thống sẽ đăng xuất tự động.");
+            
+            // Xóa token khỏi localStorage
+            localStorage.removeItem('token');
+            
+            // Kiểm tra xem có đang ở khu vực Admin hay không để điều hướng về trang Login tương ứng
+            const currentPath = window.location.pathname;
+            if (currentPath.startsWith('/admin')) {
+                // Nếu đang ở bất kỳ trang nào của admin (ngoại trừ trang login admin) thì đẩy về login admin
+                if (currentPath !== '/admin') {
+                    window.location.href = '/admin';
+                }
+            } else {
+                // Nếu đang ở trang người dùng (và không phải trang login) thì đẩy về login
+                if (currentPath !== '/auth') {
+                    window.location.href = '/auth';
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
 );
 
 export default api;

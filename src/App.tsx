@@ -15,14 +15,19 @@ import { AddAddress } from './pages/AddAddress';
 import { EditAddress } from './pages/EditAddress';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminLayout } from './components/AdminLayout';
+import AdminRoute from './components/AdminRoute';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminEmployees } from './pages/admin/AdminEmployees';
 import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminCoupons } from './pages/admin/AdminCoupons';
+import { AdminProfile } from './pages/admin/AdminProfile';
 import { Product, CartItem } from './types';
 
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 const App: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -70,55 +75,60 @@ const App: React.FC = () => {
   };
 
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen flex flex-col">
-            <Routes>
-              <Route path="/users" element={<User />} />
-              <Route path="/admin" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-              <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
-              <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
-              <Route path="/admin/users" element={<AdminLayout><AdminUsers /></AdminLayout>} />
-              <Route
-                path="*"
-                element={
-                  <>
-                    <Navbar
-                      cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-                      onOpenCart={() => setIsCartOpen(true)}
-                    />
-                    <main className="flex-grow">
-                      <Routes>
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/" element={<Home onAddToCart={addToCart} />} />
-                        <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
-                        <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/profile/edit" element={<EditProfile />} />
-                        <Route path="/profile/address/new" element={<AddAddress />} />
-                        <Route path="/profile/address/edit/:id" element={<EditAddress />} />
-                      </Routes>
-                    </main>
-                    <Footer />
-                  </>
-                }
-              />
-            </Routes>
+    <LanguageProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen flex flex-col">
+              <Routes>
+                <Route path="/users" element={<User />} />
+                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/employees" element={<AdminRoute><AdminLayout><AdminEmployees /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/products" element={<AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/categories" element={<AdminRoute><AdminLayout><AdminCategories /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><AdminCoupons /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/profile" element={<AdminRoute><AdminLayout><AdminProfile /></AdminLayout></AdminRoute>} />
+                <Route
+                  path="*"
+                  element={
+                    <>
+                      <Navbar
+                        cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                        onOpenCart={() => setIsCartOpen(true)}
+                      />
+                      <main className="flex-grow">
+                        <Routes>
+                          <Route path="/reset-password" element={<ResetPassword />} />
+                          <Route path="/" element={<Home onAddToCart={addToCart} />} />
+                          <Route path="/catalog" element={<Catalog onAddToCart={addToCart} />} />
+                          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+                          <Route path="/auth" element={<Auth />} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route path="/profile/edit" element={<EditProfile />} />
+                          <Route path="/profile/address/new" element={<AddAddress />} />
+                          <Route path="/profile/address/edit/:id" element={<EditAddress />} />
+                        </Routes>
+                      </main>
+                      <Footer />
+                    </>
+                  }
+                />
+              </Routes>
 
-            <CartSidebar
-              isOpen={isCartOpen}
-              onClose={() => setIsCartOpen(false)}
-              items={cartItems}
-              onUpdateQuantity={updateQuantity}
-              onRemove={removeFromCart}
-            />
-          </div>
-        </Router>
-      </AuthProvider>
-    </NotificationProvider>
+              <CartSidebar
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                items={cartItems}
+                onUpdateQuantity={updateQuantity}
+                onRemove={removeFromCart}
+              />
+            </div>
+          </Router>
+        </AuthProvider>
+      </NotificationProvider>
+    </LanguageProvider>
   );
 };
 

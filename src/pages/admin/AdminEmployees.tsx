@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, X, Search, UserCircle, Ban, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, X, Search, UserCircle, Ban, Eye, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 export interface StaffData {
   id?: number | string;
@@ -22,6 +24,8 @@ export const AdminEmployees: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { showNotification } = useNotification();
+  const { t, language } = useLanguage();
+  const { user: currentUser } = useAuth();
 
   const [modalType, setModalType] = useState<ModalType>(null);
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
@@ -36,6 +40,10 @@ export const AdminEmployees: React.FC = () => {
     name: '', email: '', role: 'staff', is_active: true as boolean
   });
 
+  const hasSuperAdmin = (excludeId?: string | number) => {
+    return staff.some(s => s.role === 'superadmin' && String(getStaffId(s)) !== String(excludeId));
+  };
+
   // ============ API ============
 
   const fetchStaff = async () => {
@@ -49,7 +57,7 @@ export const AdminEmployees: React.FC = () => {
       else if (Array.isArray(res.data)) data = res.data;
       setStaff(data);
     } catch (error: any) {
-      showNotification(error.response?.data?.message || 'Không thể tải danh sách nhân viên', 'error');
+      showNotification(error.response?.data?.message || t('loading_staff'), 'error');
     } finally {
       setLoading(false);
     }
@@ -98,7 +106,7 @@ export const AdminEmployees: React.FC = () => {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (addForm.password !== addForm.password_confirmation) {
-      showNotification('Mật khẩu xác nhận không khớp!', 'error');
+      showNotification(t('confirm_password_error') || 'Mật khẩu xác nhận không khớp!', 'error');
       return;
     }
     try {
@@ -112,7 +120,7 @@ export const AdminEmployees: React.FC = () => {
         role: addForm.role,
         is_active: Number(addForm.is_active)
       });
-      showNotification('Thêm nhân viên thành công!', 'success');
+      showNotification(t('add_staff_success') || 'Thêm nhân viên thành công!', 'success');
       closeModal();
       fetchStaff();
     } catch (error: any) {
@@ -121,7 +129,7 @@ export const AdminEmployees: React.FC = () => {
       setValidationErrors(errs);
       const msgs = Object.values(errs).flat();
       showNotification(
-        msgs.length > 0 ? msgs.join(' | ') : (error.response?.data?.message || 'Thêm nhân viên thất bại!'),
+        msgs.length > 0 ? msgs.join(' | ') : (error.response?.data?.message || t('add_staff_fail') || 'Thêm nhân viên thất bại!'),
         'error'
       );
     } finally {
@@ -141,7 +149,7 @@ export const AdminEmployees: React.FC = () => {
         role: editForm.role,
         is_active: editForm.is_active
       });
-      showNotification('Cập nhật nhân viên thành công!', 'success');
+      showNotification(t('update_staff_success') || 'Cập nhật nhân viên thành công!', 'success');
       closeModal();
       fetchStaff();
     } catch (error: any) {
@@ -150,7 +158,7 @@ export const AdminEmployees: React.FC = () => {
       setValidationErrors(errs);
       const msgs = Object.values(errs).flat();
       showNotification(
-        msgs.length > 0 ? msgs.join(' | ') : (error.response?.data?.message || 'Cập nhật thất bại!'),
+        msgs.length > 0 ? msgs.join(' | ') : (error.response?.data?.message || t('update_staff_fail') || 'Cập nhật thất bại!'),
         'error'
       );
     } finally {
@@ -163,11 +171,11 @@ export const AdminEmployees: React.FC = () => {
     try {
       setIsSubmitting(true);
       await api.delete(`/admin/staff/${getStaffId(selectedStaff)}`);
-      showNotification('Đã xóa nhân viên thành công!', 'success');
+      showNotification(t('delete_staff_success') || 'Đã xóa nhân viên thành công!', 'success');
       setStaff(prev => prev.filter(s => getStaffId(s) !== getStaffId(selectedStaff)));
       closeModal();
     } catch (error: any) {
-      showNotification(error.response?.data?.message || 'Xóa nhân viên thất bại!', 'error');
+      showNotification(error.response?.data?.message || t('delete_staff_fail') || 'Xóa nhân viên thất bại!', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -188,34 +196,62 @@ export const AdminEmployees: React.FC = () => {
 
   const roleLabel = (role?: string) => {
     switch (role) {
-      case 'admin':   return { text: 'Quản trị',  cls: 'bg-violet-50 text-violet-700' };
-      case 'manager': return { text: 'Quản lý',   cls: 'bg-blue-50 text-blue-700' };
-      default:        return { text: 'Nhân viên', cls: 'bg-slate-100 text-slate-600' };
+      case 'superadmin': 
+        return { 
+          text: t('superadmin_role'),  
+          cls: 'bg-gradient-to-r from-amber-500 to-red-600 text-white shadow-sm font-bold relative overflow-hidden group',
+          icon: <Crown size={12} className="mr-1 animate-pulse" />
+        };
+      case 'admin':   
+        return { text: t('admin_role'),  cls: 'bg-violet-100 text-violet-700 font-semibold' };
+      default:        
+        return { text: t('staff_role'), cls: 'bg-slate-100 text-slate-600' };
     }
   };
+
+  // ============ AUTH GATE ============
+  if (currentUser && currentUser.role !== 'superadmin') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
+        <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mb-6 border border-rose-100 shadow-sm">
+          <Ban size={40} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-3 font-sans">Truy cập bị từ chối</h2>
+        <p className="text-slate-500 max-w-md mx-auto mb-8 font-sans leading-relaxed">
+          Bạn không có quyền hạn cần thiết để truy cập chức năng Quản lý nhân viên. Vui lòng liên hệ với Super Admin để biết thêm chi tiết.
+        </p>
+        <button 
+          onClick={() => window.history.back()}
+          className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-all"
+        >
+          Quay lại trang trước
+        </button>
+      </div>
+    );
+  }
 
   // ============ JSX ============
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative min-h-[60vh]">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative min-h-[60vh] font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Danh sách Nhân viên</h2>
-          <p className="text-slate-400 text-sm mt-1">Quản lý tài khoản và phân quyền hệ thống ({staff.length} nhân viên)</p>
+          <h2 className="text-xl font-bold text-slate-900">{t('employee_list')}</h2>
+          <p className="text-slate-400 text-sm mt-1">{t('manage_staff')} ({staff.length} {t('staff_role')})</p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-60">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <input
-              type="text" placeholder="Tìm tên hoặc email..."
+              type="text" placeholder={t('search_placeholder')}
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-9 pr-4 outline-none focus:ring-1 focus:border-primary text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition-colors"
             />
           </div>
           <button onClick={() => openModal('add')} className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-sm shrink-0">
             <Plus size={16} />
-            <span className="hidden sm:block">Thêm NV</span>
+            <span className="hidden sm:block">{t('add_staff')}</span>
           </button>
         </div>
       </div>
@@ -224,17 +260,17 @@ export const AdminEmployees: React.FC = () => {
       {loading ? (
         <div className="flex justify-center items-center py-20 flex-col gap-3 text-slate-400">
           <Loader2 className="animate-spin text-primary" size={36} />
-          <p className="text-sm">Đang tải dữ liệu nhân viên...</p>
+          <p className="text-sm">{t('loading_staff')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider">
-                <th className="px-4 py-3 font-semibold rounded-l-xl">Nhân viên</th>
-                <th className="px-4 py-3 font-semibold">Vai trò</th>
-                <th className="px-4 py-3 font-semibold text-center">Trạng thái</th>
-                <th className="px-4 py-3 font-semibold text-right rounded-r-xl">Thao tác</th>
+                <th className="px-4 py-3 font-semibold rounded-l-xl">{t('member_col')}</th>
+                <th className="px-4 py-3 font-semibold">{t('role_col')}</th>
+                <th className="px-4 py-3 font-semibold text-center">{t('status_col')}</th>
+                <th className="px-4 py-3 font-semibold text-right rounded-r-xl">{t('actions')}</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-slate-50">
@@ -242,7 +278,7 @@ export const AdminEmployees: React.FC = () => {
                 <tr>
                   <td colSpan={4} className="py-16 text-center text-slate-400">
                     <UserCircle size={40} className="mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">Không tìm thấy nhân viên nào.</p>
+                    <p className="text-sm">{t('no_staff_found')}</p>
                   </td>
                 </tr>
               ) : filteredStaff.map((s) => {
@@ -261,24 +297,32 @@ export const AdminEmployees: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${role.cls}`}>{role.text}</span>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs ${role.cls}`}>
+                        {role.icon}
+                        {role.text}
+                        {s.role === 'superadmin' && (
+                          <span className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out skew-x-12" />
+                        )}
+                      </span>
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold ${isActive(s.is_active) ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                        {isActive(s.is_active) ? 'Hoạt động' : 'Tạm khóa'}
+                        {isActive(s.is_active) ? t('active') : t('locked')}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => openModal('view', s)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-600 hover:text-white rounded-lg transition-all text-xs font-bold">
-                          <Eye size={13} /> Xem
+                          <Eye size={13} /> {t('view')}
                         </button>
                         <button onClick={() => openModal('edit', s)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-xs font-bold">
-                          <Edit2 size={13} /> Sửa
+                          <Edit2 size={13} /> {t('edit')}
                         </button>
-                        <button onClick={() => openModal('delete', s)} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all text-xs font-bold">
-                          <Trash2 size={13} /> Xóa
-                        </button>
+                        {String(getStaffId(s)) !== String(currentUser?.id) && (
+                          <button onClick={() => openModal('delete', s)} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all text-xs font-bold">
+                            <Trash2 size={13} /> {t('delete')}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -306,14 +350,14 @@ export const AdminEmployees: React.FC = () => {
                   <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-red-100">
                     <Ban size={28} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">Xóa nhân viên?</h3>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{t('delete_staff_title')}</h3>
                   <p className="text-slate-500 text-sm mb-7">
-                    Bạn đang chuẩn bị xóa <strong className="text-slate-900">{selectedStaff?.email}</strong>. Hành động này không thể hoàn tác.
+                    {language === 'vi' ? 'Bạn đang chuẩn bị xóa' : 'You are about to delete'} <strong className="text-slate-900">{selectedStaff?.email}</strong>.
                   </p>
                   <div className="flex gap-3">
-                    <button onClick={closeModal} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm">Hủy bỏ</button>
+                    <button onClick={closeModal} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm">{t('cancel')}</button>
                     <button onClick={handleDelete} disabled={isSubmitting} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm disabled:opacity-50">
-                      {isSubmitting ? 'Đang xóa...' : 'Xác nhận xóa'}
+                      {isSubmitting ? t('processing') : t('confirm_delete')}
                     </button>
                   </div>
                 </div>
@@ -323,7 +367,7 @@ export const AdminEmployees: React.FC = () => {
               {modalType === 'view' && selectedStaff && (
                 <div>
                   <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-900">Hồ Sơ Nhân Viên</h3>
+                    <h3 className="font-bold text-slate-900">{t('staff_profile')}</h3>
                     <button onClick={closeModal} className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
                   </div>
                   <div className="p-6 space-y-5">
@@ -338,8 +382,8 @@ export const AdminEmployees: React.FC = () => {
                     </div>
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
                       {[
-                        { label: 'Vai trò', value: roleLabel(selectedStaff.role).text },
-                        { label: 'Trạng thái', value: isActive(selectedStaff.is_active) ? 'Đang hoạt động' : 'Đã khóa', badge: true, active: isActive(selectedStaff.is_active) },
+                        { label: t('role_col'), value: roleLabel(selectedStaff.role).text },
+                        { label: t('status_col'), value: isActive(selectedStaff.is_active) ? t('active') : t('locked'), badge: true, active: isActive(selectedStaff.is_active) },
                         { label: 'Mã ID', value: String(getStaffId(selectedStaff) || '---'), mono: true },
                       ].map((row, i) => (
                         <div key={i} className="flex justify-between items-center text-sm">
@@ -354,7 +398,7 @@ export const AdminEmployees: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-5 border-t border-slate-100 bg-slate-50/50">
-                    <button onClick={closeModal} className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm">Đóng lại</button>
+                    <button onClick={closeModal} className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold text-sm">{t('close')}</button>
                   </div>
                 </div>
               )}
@@ -363,60 +407,62 @@ export const AdminEmployees: React.FC = () => {
               {modalType === 'add' && (
                 <form onSubmit={handleAdd}>
                   <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-900">Thêm Nhân Viên Mới</h3>
+                    <h3 className="font-bold text-slate-900">{t('create_staff')}</h3>
                     <button type="button" onClick={closeModal} className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
                   </div>
                   <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
                     {/* Tên */}
                     <div>
-                      <label className={labelClass}>Họ và tên *</label>
+                      <label className={labelClass}>{t('full_name')} *</label>
                       <input required type="text" value={addForm.name} onChange={e => setAddForm({ ...addForm, name: e.target.value })}
-                        className={getFirstError('name') ? inputErrClass : inputClass} placeholder="Nguyễn Văn A" />
+                        className={getFirstError('name') ? inputErrClass : inputClass} />
                       {getFirstError('name') && <p className="text-red-500 text-xs mt-1">{getFirstError('name')}</p>}
                     </div>
                     {/* Email */}
                     <div>
                       <label className={labelClass}>Email *</label>
                       <input required type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })}
-                        className={getFirstError('email') ? inputErrClass : inputClass} placeholder="staff@example.com" />
+                        className={getFirstError('email') ? inputErrClass : inputClass} />
                       {getFirstError('email') && <p className="text-red-500 text-xs mt-1">{getFirstError('email')}</p>}
                     </div>
                     {/* Password */}
                     <div className="flex gap-3">
                       <div className="flex-1">
-                        <label className={labelClass}>Mật khẩu *</label>
+                        <label className={labelClass}>{t('password')} *</label>
                         <input required type="password" value={addForm.password} onChange={e => setAddForm({ ...addForm, password: e.target.value })}
-                          className={getFirstError('password') ? inputErrClass : inputClass} placeholder="••••••••" />
+                          className={getFirstError('password') ? inputErrClass : inputClass} />
                         {getFirstError('password') && <p className="text-red-500 text-xs mt-1">{getFirstError('password')}</p>}
                       </div>
                       <div className="flex-1">
-                        <label className={labelClass}>Xác nhận MK *</label>
+                        <label className={labelClass}>{t('confirm_password')} *</label>
                         <input required type="password" value={addForm.password_confirmation} onChange={e => setAddForm({ ...addForm, password_confirmation: e.target.value })}
-                          className={inputClass} placeholder="••••••••" />
+                          className={inputClass} />
                       </div>
                     </div>
                     {/* Role */}
                     <div>
-                      <label className={labelClass}>Vai trò</label>
+                      <label className={labelClass}>{t('role_col')}</label>
                       <select value={addForm.role} onChange={e => setAddForm({ ...addForm, role: e.target.value })} className={`${inputClass} appearance-none cursor-pointer`}>
-                        <option value="staff">Nhân viên (staff)</option>
-                        <option value="manager">Quản lý (manager)</option>
-                        <option value="admin">Quản trị viên (admin)</option>
+                        <option value="staff">{t('staff_role')}</option>
+                        <option value="admin">{t('admin_role')}</option>
+                        <option value="superadmin" disabled={hasSuperAdmin()}>
+                          {t('superadmin_role')} {hasSuperAdmin() ? `(${t('superadmin_exists_warning')})` : ''}
+                        </option>
                       </select>
                     </div>
                     {/* Status */}
                     <div>
-                      <label className={labelClass}>Trạng thái</label>
+                      <label className={labelClass}>{t('status_col')}</label>
                       <select value={addForm.is_active} onChange={e => setAddForm({ ...addForm, is_active: Number(e.target.value) as 0 | 1 })} className={`${inputClass} appearance-none cursor-pointer`}>
-                        <option value={1}>Đang hoạt động</option>
-                        <option value={0}>Tạm khóa</option>
+                        <option value={1}>{t('active')}</option>
+                        <option value={0}>{t('locked')}</option>
                       </select>
                     </div>
                   </div>
                   <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">Hủy bỏ</button>
+                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">{t('cancel')}</button>
                     <button type="submit" disabled={isSubmitting} className="flex-1 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold text-sm disabled:opacity-50 shadow-sm">
-                      {isSubmitting ? 'Đang xử lý...' : 'Tạo Nhân Viên'}
+                      {isSubmitting ? t('processing') : t('create_staff')}
                     </button>
                   </div>
                 </form>
@@ -426,42 +472,44 @@ export const AdminEmployees: React.FC = () => {
               {modalType === 'edit' && selectedStaff && (
                 <form onSubmit={handleEdit}>
                   <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-900">Cập Nhật Nhân Viên</h3>
+                    <h3 className="font-bold text-slate-900">{t('update_staff')}</h3>
                     <button type="button" onClick={closeModal} className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-100 rounded-lg"><X size={18} /></button>
                   </div>
                   <div className="p-6 space-y-4">
                     <div>
-                      <label className={labelClass}>Họ và tên *</label>
+                      <label className={labelClass}>{t('full_name')} *</label>
                       <input required type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                        className={getFirstError('name') ? inputErrClass : inputClass} placeholder="Nguyễn Văn A" />
+                        className={getFirstError('name') ? inputErrClass : inputClass} />
                       {getFirstError('name') && <p className="text-red-500 text-xs mt-1">{getFirstError('name')}</p>}
                     </div>
                     <div>
                       <label className={labelClass}>Email *</label>
                       <input required type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                        className={getFirstError('email') ? inputErrClass : inputClass} placeholder="staff@example.com" />
+                        className={getFirstError('email') ? inputErrClass : inputClass} />
                       {getFirstError('email') && <p className="text-red-500 text-xs mt-1">{getFirstError('email')}</p>}
                     </div>
                     <div>
-                      <label className={labelClass}>Vai trò</label>
+                      <label className={labelClass}>{t('role_col')}</label>
                       <select value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })} className={`${inputClass} appearance-none cursor-pointer`}>
-                        <option value="staff">Nhân viên (staff)</option>
-                        <option value="manager">Quản lý (manager)</option>
-                        <option value="admin">Quản trị viên (admin)</option>
+                        <option value="staff">{t('staff_role')}</option>
+                        <option value="admin">{t('admin_role')}</option>
+                        <option value="superadmin" disabled={hasSuperAdmin(selectedStaff ? getStaffId(selectedStaff) : undefined)}>
+                          {t('superadmin_role')} {hasSuperAdmin(selectedStaff ? getStaffId(selectedStaff) : undefined) ? `(${t('superadmin_exists_warning')})` : ''}
+                        </option>
                       </select>
                     </div>
                     <div>
-                      <label className={labelClass}>Trạng thái</label>
+                      <label className={labelClass}>{t('status_col')}</label>
                       <select value={editForm.is_active ? 'true' : 'false'} onChange={e => setEditForm({ ...editForm, is_active: e.target.value === 'true' })} className={`${inputClass} appearance-none cursor-pointer`}>
-                        <option value="true">Đang hoạt động</option>
-                        <option value="false">Tạm khóa</option>
+                        <option value="true">{t('active')}</option>
+                        <option value="false">{t('locked')}</option>
                       </select>
                     </div>
                   </div>
                   <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">Hủy bỏ</button>
+                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm">{t('cancel')}</button>
                     <button type="submit" disabled={isSubmitting} className="flex-1 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold text-sm disabled:opacity-50 shadow-sm">
-                      {isSubmitting ? 'Đang lưu...' : 'Lưu Thay Đổi'}
+                      {isSubmitting ? t('processing') : t('save_changes')}
                     </button>
                   </div>
                 </form>

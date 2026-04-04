@@ -33,12 +33,12 @@ export const Notification: React.FC<NotificationProps> = ({ message, type, onClo
             <div className="flex-shrink-0">
                 {icons[type]}
             </div>
-            <p className="text-sm font-medium text-white/90 leading-tight">
+            <p className="text-sm font-bold text-slate-900 leading-tight">
                 {message}
             </p>
             <button
                 onClick={onClose}
-                className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
+                className="ml-2 p-1 hover:bg-slate-200 rounded-lg transition-colors text-slate-400 hover:text-slate-900"
             >
                 <X size={16} />
             </button>
