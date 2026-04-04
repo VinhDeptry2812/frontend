@@ -5,11 +5,11 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", serif;
   
-  --color-primary: #0f2cbd;
+  --color-primary: #d97706; /* amber-600 / nội thất ấm áp */
   --color-accent-gold: #c5a059;
-  --color-background-light: #f6f6f8;
-  --color-background-dark: #101322;
-  --color-surface-dark: #1a1f35;
+  --color-background-light: #fafaf9; /* warm white */
+  --color-background-dark: #1c1917; /* warm dark */
+  --color-surface-dark: #292524;
 }
 
 @layer base {

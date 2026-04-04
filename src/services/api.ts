@@ -12,26 +12,38 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`; // Hoặc cấu trúc Backend mà bạn cài đặt
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
 
-// Thêm interceptor BẮT LỖI RESPONSES (Quan trọng để FORCE LOGOUT)
+// Thêm interceptor BẮT LỖI RESPONSES (FORCE LOGOUT thông minh)
 api.interceptors.response.use(
   (response) => {
       return response;
   },
   (error) => {
-      // Nếu tài khoản bị Admin khóa, Backend sẽ trả về 401 Unauthorized hoặc 403 Forbidden
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          console.warn("Phiên kết thúc vì tài khoản bị khóa hoặc token hết hạn!");
-          // Xóa token khỏi máy người bị khóa
+          const currentPath = window.location.pathname;
+          
+          // Kiểm tra xem có đang ở trang Admin hay không
+          const isAdminPath = currentPath.startsWith('/admin');
+          
+          console.warn("Phiên kết thúc! Đang điều hướng về trang đăng nhập tương ứng...");
+          
+          // Xóa token
           localStorage.removeItem('token');
           
-          // Điều hướng văng thẳng ra ngoài màn hình login
-          // (Dùng window.location vì không nằm trong context Component React)
-          window.location.href = '/auth'; // Đường dẫn tới trang đăng nhập
+          // Điều hướng dựa trên ngữ cảnh (Quan trọng để tránh văng từ Admin sang User Login)
+          if (isAdminPath) {
+              if (currentPath !== '/admin') {
+                  window.location.href = '/admin';
+              }
+          } else {
+              if (currentPath !== '/auth') {
+                  window.location.href = '/auth';
+              }
+          }
       }
       return Promise.reject(error);
   }

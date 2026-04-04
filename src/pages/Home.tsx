@@ -1,172 +1,131 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { ArrowRight, Star, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowRight, Armchair, BedDouble, Lightbulb, Sofa, Table2, DoorClosed } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
-import { PRODUCTS } from '../data';
 import { Product } from '../types';
 
 interface HomeProps {
   onAddToCart: (product: Product) => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onAddToCart }) => {
-  const featuredProducts = PRODUCTS.slice(0, 3);
-  const newArrivals = PRODUCTS.slice(3, 6);
+export default function Home({ onAddToCart }: HomeProps) {
+  const featuredProducts: Product[] = [
+    { id: '1', name: "Sofa Góc Nordic Cao Cấp", price: 16990000, image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80", designer: "Nordic Lab", category: "Sofa" },
+    { id: '2', name: "Ghế bành thư giãn Eames", price: 5450000, image: "https://images.unsplash.com/photo-1592078615290-033ee584e277?auto=format&fit=crop&w=800&q=80", designer: "Charles Eames", category: "Chairs" },
+    { id: '3', name: "Bàn trà kính cường lực hiện đại", price: 2890000, image: "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&w=800&q=80", designer: "Modernist", category: "Tables" },
+    { id: '4', name: "Giường gỗ Sồi nguyên khối", price: 12500000, image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80", designer: "Oak Master", category: "Beds" },
+  ];
+
+  const categories = [
+    { name: 'Sofa & Ghế bành', count: '124 Mẫu', icon: <Sofa className="w-8 h-8"/>, color: 'bg-amber-100 text-amber-700' },
+    { name: 'Phòng ngủ', count: '86 Mẫu', icon: <BedDouble className="w-8 h-8"/>, color: 'bg-stone-100 text-stone-600' },
+    { name: 'Bàn ghế ăn', count: '312 Mẫu', icon: <Table2 className="w-8 h-8"/>, color: 'bg-orange-100 text-orange-600' },
+    { name: 'Đèn trang trí', count: '100+ Mẫu', icon: <Lightbulb className="w-8 h-8"/>, color: 'bg-yellow-100 text-yellow-600' },
+    { name: 'Tủ & Kệ', count: '94 Mẫu', icon: <DoorClosed className="w-8 h-8"/>, color: 'bg-emerald-100 text-emerald-600' },
+    { name: 'Nội thất gỗ', count: '57 Mẫu', icon: <Armchair className="w-8 h-8"/>, color: 'bg-rose-100 text-rose-600' },
+  ];
 
   return (
-    <div className="overflow-hidden">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center px-6 pt-20">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&q=80&w=2000" 
-            alt="Luxury Living Room" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto w-full">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="max-w-2xl text-white"
-          >
-            <p className="text-xs uppercase tracking-[0.3em] font-bold mb-6 text-accent-gold">
-              The 2024 Collection
-            </p>
-            <h1 className="text-6xl md:text-8xl font-serif font-bold leading-[0.9] mb-8 tracking-tighter">
-              Timeless <br /> Elegance.
-            </h1>
-            <p className="text-lg text-slate-200 mb-10 max-w-lg leading-relaxed">
-              Discover artisanal furniture that blends contemporary aesthetics with 
-              unparalleled craftsmanship. Designed for the modern sanctuary.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link 
-                to="/catalog" 
-                className="bg-white text-slate-900 px-10 py-5 rounded-full font-bold flex items-center gap-2 hover:bg-accent-gold hover:text-white transition-all group"
-              >
-                Shop Collection
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-full font-bold hover:bg-white/20 transition-all">
-                Our Story
-              </button>
+    <div className="space-y-16 pb-16">
+      
+      {/* Hero Banner Section */}
+      <section className="relative px-4 mt-6">
+        <div className="container mx-auto">
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-stone-800 to-stone-700 text-white shadow-2xl h-[450px]">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 rounded-l-full blur-3xl transform translate-x-1/4"></div>
+            <div className="absolute bottom-0 left-10 w-64 h-64 bg-amber-600/40 rounded-full blur-3xl mix-blend-screen"></div>
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between h-full px-10 lg:px-20">
+              <div className="max-w-xl space-y-6 pt-10 md:pt-0">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-sm font-medium">
+                  <span className="flex w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                  Bộ Sưu Tập Tiết Thu 2026
+                </div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-serif leading-tight">
+                  Tôn vinh <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">giá trị thật</span>
+                  <br />của Không Gian
+                </h1>
+                <p className="text-stone-300 text-lg opacity-90 max-w-md">
+                  Mang đến sự sang trọng và ấm cúng cho ngôi nhà của bạn với những tác phẩm nội thất tinh xảo đầy phong cách.
+                </p>
+                <div className="flex gap-4 pt-2">
+                  <Link to="/category" className="px-8 py-3.5 rounded-full bg-white text-stone-900 font-bold hover:bg-gray-100 hover:scale-105 transition-all shadow-lg flex items-center gap-2">
+                    Triển lãm nội thất <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+              </div>
+              <div className="hidden md:block relative w-1/2 h-full">
+                <img 
+                  src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?auto=format&fit=crop&w=800&q=80" 
+                  alt="Furniture Luxury" 
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-4/5 object-cover rounded-2xl drop-shadow-2xl hover:scale-105 transition-all duration-700 border-4 border-stone-600/50"
+                />
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
+      </section>
 
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-2">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className={`h-1 rounded-full transition-all ${i === 0 ? 'w-12 bg-white' : 'w-4 bg-white/30'}`} />
+      {/* Categories Section */}
+      <section className="container mx-auto px-4">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold font-serif mb-2">Không gian sống</h2>
+            <p className="text-gray-500">Lựa chọn nội thất phù hợp cho từng căn phòng</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {categories.map((cat, idx) => (
+            <Link key={idx} to="/category" className="bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 hover:shadow-[0_10px_30px_rgb(217_119_6_/_0.15)] hover:border-amber-200 hover:-translate-y-1 transition-all group">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${cat.color} group-hover:scale-110 transition-transform`}>
+                {cat.icon}
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">{cat.name}</h3>
+                <p className="text-xs text-gray-500 mt-1">{cat.count}</p>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Featured Collections */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div className="max-w-xl">
-              <p className="text-xs uppercase tracking-widest font-bold text-primary mb-4">Curated Selection</p>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tight">Featured Collections</h2>
+      {/* Featured Products */}
+      <section className="container mx-auto px-4">
+        <div className="flex items-end justify-between mb-8 pb-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+              <Armchair className="w-5 h-5 fill-current" />
             </div>
-            <Link to="/catalog" className="text-sm font-bold flex items-center gap-2 hover:text-primary transition-colors group">
-              View All Masterpieces
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold font-serif">Tuyển tác nội thất</h2>
+            </div>
+          </div>
+          <Link to="/category" className="text-amber-700 font-medium hover:underline flex items-center gap-1">
+            Xem tất cả <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredProducts.map(product => (
+            <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+          ))}
+        </div>
+      </section>
+
+      {/* Promotional Banner */}
+      <section className="container mx-auto px-4">
+        <div className="bg-stone-800 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+          
+          <div className="relative z-10 md:w-1/2">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Góc Sống Xanh, Thoải Mái Từng Giây</h2>
+            <p className="text-stone-300 mb-8 max-w-md">Combo nội thất phòng bếp mang đậm phong cách Châu Âu. Giảm ưu đãi 30% cho khách hàng thiết kế toàn bộ ngôi nhà.</p>
+            <Link to="/category" className="px-8 py-3 bg-amber-600 text-white font-bold rounded-full hover:bg-amber-700 transition-colors inline-block">
+              Mua Ngay
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* New Arrivals / Split Section */}
-      <section className="py-24 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-24">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative rounded-3xl overflow-hidden aspect-[4/5]"
-            >
-              <img 
-                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=1000" 
-                alt="New Arrival" 
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute bottom-10 left-10 bg-white/90 backdrop-blur-md p-8 rounded-2xl max-w-xs shadow-xl">
-                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">Designer Spotlight</p>
-                <h3 className="text-xl font-serif font-bold mb-4">The Minimalist Series by Sora Tanaka</h3>
-                <Link to="/catalog" className="text-sm font-bold text-primary flex items-center gap-2 group">
-                  Explore Series
-                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </motion.div>
-
-            <div>
-              <p className="text-xs uppercase tracking-widest font-bold text-primary mb-4">Fresh Perspectives</p>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tight mb-8">New Arrivals</h2>
-              <p className="text-slate-500 text-lg leading-relaxed mb-12">
-                Our latest additions celebrate the intersection of organic forms and industrial precision. 
-                Each piece is a testament to our commitment to sustainable luxury.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                {newArrivals.slice(0, 2).map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Expert Advice / Trust Section */}
-      <section className="py-24 px-6 bg-white border-y border-slate-100">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-primary">
-              <Star size={28} />
-            </div>
-            <h4 className="text-xl font-serif font-bold mb-4">Expert Curation</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Every piece in our collection is hand-selected by our team of interior designers for its 
-              quality and aesthetic value.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-primary">
-              <ShieldCheck size={28} />
-            </div>
-            <h4 className="text-xl font-serif font-bold mb-4">Lifetime Guarantee</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              We stand behind the craftsmanship of our furniture. All structural components are 
-              guaranteed for life.
-            </p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-6 text-primary">
-              <Truck size={28} />
-            </div>
-            <h4 className="text-xl font-serif font-bold mb-4">White-Glove Delivery</h4>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Our professional team handles everything from delivery to assembly and packaging removal 
-              in your room of choice.
-            </p>
-          </div>
-        </div>
-      </section>
     </div>
   );
-};
+}

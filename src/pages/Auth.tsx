@@ -5,7 +5,7 @@ import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 import { RecoverForm } from './RecoverForm';
 
-export const Auth: React.FC = () => {
+const Auth: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register' | 'recover'>('login');
 
   return (
@@ -45,3 +45,5 @@ export const Auth: React.FC = () => {
     </div>
   );
 };
+
+export default Auth;

@@ -1,118 +1,95 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export const AdminLogin: React.FC = () => {
+const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('user@gmail.com');
   const [password, setPassword] = useState('123456');
   const [loading, setLoading] = useState(false);
   const { showNotification } = useNotification();
+  const { fetchUser } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      showNotification("Vui lòng nhập email và mật khẩu", "error");
-      return;
-    }
-
     setLoading(true);
     try {
-      const response = await api.post("/admin/login", {
-        email: email,
-        password: password
-      });
-
-      showNotification("Đăng nhập Admin thành công", "success");
-
-      // Tìm token trong các response thường gặp của Laravel/NodeJS
-      const rawData = response.data;
-      const token = rawData?.token || 
-                    rawData?.access_token || 
-                    rawData?.data?.token || 
-                    rawData?.data?.access_token ||
-                    rawData?.user?.token;
-                    
+      const response = await api.post("/admin/login", { email, password });
+      
+      const token = response.data?.token || response.data?.access_token || response.data?.data?.token;
+      
       if (token) {
         localStorage.setItem("token", token);
+        showNotification("Đăng nhập Admin thành công", "success");
+        
+        // Cập nhật thông tin User trên toàn hệ thống
+        try {
+          await fetchUser();
+        } catch (authError) {
+          console.warn("Không thể fetch thông tin User ngay lập tức.");
+        }
+        
+        navigate('/admin/dashboard');
       } else {
-        console.warn("Không tìm thấy token trong response đăng nhập!", rawData);
+        showNotification("Lỗi: Không nhận được token từ server", "error");
       }
-
-      // Điều hướng tới trang dashboard admin v.v, đổi thay vì trang chủ
-      navigate('/admin/dashboard');
     } catch (error: any) {
-      console.error("Lỗi đăng nhập:", error);
-      if (error.response) {
-        showNotification(error.response.data?.message || "Sai thông tin đăng nhập", "error");
-      } else {
-        showNotification("Không kết nối được server", "error");
-      }
+      console.error("Lỗi đăng nhập Admin:", error);
+      showNotification(error.response?.data?.message || "Sai thông tin đăng nhập Admin", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-dark text-white p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50" />
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="max-w-md w-full bg-surface-dark border border-slate-800 rounded-3xl p-8 shadow-2xl relative z-10"
-      >
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mb-4">
-            <ShieldCheck size={32} />
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 shadow-2xl">
+        <div className="flex flex-col items-center mb-8 text-center">
+          <div className="w-16 h-16 bg-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-amber-600/20">
+            <ShieldCheck size={32} className="text-white" />
           </div>
-          <Link to="/" className="text-3xl font-serif font-bold tracking-tighter mb-2">AURELIUS</Link>
-          <p className="text-slate-400 text-sm font-medium tracking-widest uppercase">Admin Portal</p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight mb-2">AURELIUS</h1>
+          <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">Admin Control Center</p>
         </div>
-
+        
         <form className="space-y-6" onSubmit={handleLogin}>
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Admin Email</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input
-                type="email"
-                placeholder="admin@aurelius.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-background-dark border border-slate-800 rounded-xl py-4 pl-12 pr-6 outline-none focus:ring-1 focus:ring-primary transition-all text-white placeholder:text-slate-600"
+              <input 
+                type="email" value={email} onChange={(e) => setEmail(e.target.value)} 
+                placeholder="admin@aurelius.com" className="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-12 pr-6 outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all" 
               />
             </div>
           </div>
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-background-dark border border-slate-800 rounded-xl py-4 pl-12 pr-6 outline-none focus:ring-1 focus:ring-primary transition-all text-white placeholder:text-slate-600"
+              <input 
+                type="password" value={password} onChange={(e) => setPassword(e.target.value)} 
+                placeholder="••••••••" className="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-12 pr-6 outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition-all" 
               />
             </div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 mt-8"
-          >
-            {loading ? "Đang xác thực..." : "Access Portal"}
-            {!loading && <ArrowRight size={18} />}
+
+          <button type="submit" disabled={loading} className="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition-all">
+            {loading ? <Loader2 className="animate-spin" size={20} /> : <><ArrowRight size={18} /> Đăng nhập quản trị</>}
           </button>
         </form>
+        
+        <div className="mt-8 text-center pt-6 border-t border-slate-700">
+           <Link to="/" className="text-sm text-slate-400 hover:text-white transition-colors">Quay lại trang chủ</Link>
+        </div>
       </motion.div>
     </div>
   );
 };
+
+export default AdminLogin;
