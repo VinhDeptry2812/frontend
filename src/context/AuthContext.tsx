@@ -9,12 +9,13 @@ interface User {
   gender?: string;
   birthday?: string;
   avatar?: string;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   fetchUser: () => Promise<void>;
 }
@@ -33,9 +34,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    // Xác định endpoint dựa trên đường dẫn hiện tại
+    const isAdminPath = window.location.pathname.startsWith('/admin');
+    const endpoint = isAdminPath ? '/admin/me' : '/me';
+
     try {
-      const response = await api.get('/me');
-      const fetchUserData = (response.data.success && response.data.user) ? response.data.user : (response.data.user || response.data);
+      const response = await api.get(endpoint);
+      const data = response.data;
+      const fetchUserData = (data.success && (data.admin || data.user)) ? (data.admin || data.user) : (data.admin || data.user || data);
 
       if (fetchUserData) {
         // Kiểm tra ngay lập tức nếu dữ liệu trả về báo tài khoản bị vô hiệu hóa
@@ -45,8 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem('token');
           setUser(null);
           
-          // Thêm thông báo nếu có thể hoặc đẩy thẳng về login (dùng window.location.href để xóa mảng bộ nhớ SPA)
-          window.location.href = '/auth';
+          window.location.href = isAdminPath ? '/admin' : '/auth';
           return;
         }
 
@@ -56,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Error fetching user:', error);
-      localStorage.removeItem('token');
+      // Xóa user state, việc xóa token và redirect đã được interceptor trong api.ts xử lý nếu là lỗi 401/403
       setUser(null);
     } finally {
       setLoading(false);
@@ -67,9 +72,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUser();
   }, [fetchUser]);
 
-  const login = (token: string) => {
+  const login = async (token: string) => {
     localStorage.setItem('token', token);
-    fetchUser();
+    setLoading(true);
+    await fetchUser();
   };
 
   const logout = () => {
