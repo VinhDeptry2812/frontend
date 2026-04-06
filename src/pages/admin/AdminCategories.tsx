@@ -20,6 +20,28 @@ import { useLanguage } from '../../context/LanguageContext';
 
 // Removed BASE_STORAGE_URL and getImageUrl logic for categories as requested
 
+// Hàm loại bỏ dấu tiếng Việt để tìm kiếm gần đúng
+const removeVietnameseTones = (str: string) => {
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+  str = str.replace(/Đ/g, "D");
+  // Một số bộ encode cũ có thể có lỗi, nên thêm phần này để chắc chắn
+  str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // huyền, sắc, ngã, hỏi, nặng
+  str = str.replace(/\u02C6|\u0306|\u031B/g, ""); // mũ â, mũ ă, móc ơ/ư
+  return str.toLowerCase().trim();
+};
+
 
 interface Category {
   id: number;
@@ -120,6 +142,38 @@ export const AdminCategories: React.FC = () => {
     sortTree(roots);
     return roots;
   }, [categories]);
+
+  // Tự động mở rộng các nhánh khi tìm kiếm
+  useEffect(() => {
+    if (!searchTerm.trim()) return;
+
+    const normalizedSearch = removeVietnameseTones(searchTerm);
+    const newExpandedIds = new Set<number>(expandedIds);
+    let changed = false;
+
+    const traverse = (node: Category) => {
+      const isMatch = removeVietnameseTones(node.name).includes(normalizedSearch);
+      let hasChildMatch = false;
+
+      if (node.children?.length) {
+        node.children.forEach(child => {
+          if (traverse(child)) hasChildMatch = true;
+        });
+      }
+
+      if (hasChildMatch || isMatch) {
+        if (node.children?.length && !newExpandedIds.has(node.id)) {
+          newExpandedIds.add(node.id);
+          changed = true;
+        }
+        return true;
+      }
+      return false;
+    };
+
+    categoryTree.forEach(traverse);
+    if (changed) setExpandedIds(newExpandedIds);
+  }, [searchTerm, categoryTree]);
 
   const toggleExpand = (id: number) => {
     const next = new Set(expandedIds);
@@ -240,117 +294,142 @@ export const AdminCategories: React.FC = () => {
     return options;
   }, [categoryTree]);
 
+  // Logic kiểm tra xem một node có nên hiển thị hay không (bao gồm cả các tổ tiên của nó nếu con nó khớp)
+  const shouldShowNode = (node: Category, search: string): boolean => {
+    if (!search.trim()) return true;
+    
+    const normalizedSearch = removeVietnameseTones(search);
+    const normalizedName = removeVietnameseTones(node.name);
+    
+    // Nếu chính nó khớp
+    if (normalizedName.includes(normalizedSearch)) return true;
+    
+    // Nếu bất kỳ con nào của nó khớp (đệ quy)
+    if (node.children?.length) {
+      return node.children.some(child => shouldShowNode(child, search));
+    }
+    
+    return false;
+  };
+
   // Render Table Row Recursive
   const renderRows = (nodes: Category[], level: number = 0) => {
-    return nodes.map(node => {
-      const isExpanded = expandedIds.has(node.id);
-      const hasChildren = node.children && node.children.length > 0;
-      
-      // Filter by search term
-      const matchesSearch = node.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return (
-        <React.Fragment key={node.id}>
-          <tr className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${!matchesSearch && searchTerm ? 'opacity-40' : ''}`}>
-            <td className="px-4 py-4 min-w-[200px]">
-              <div className="flex items-center" style={{ paddingLeft: `${level * 28}px` }}>
-                {level > 0 && (
-                  <div className="w-5 flex items-center justify-center text-slate-300">
-                    <span className="w-4 h-px bg-slate-200" />
-                  </div>
-                )}
-                {hasChildren ? (
-                  <button 
-                    onClick={() => toggleExpand(node.id)}
-                    className="p-1 hover:bg-slate-200 rounded-md transition-colors mr-1 text-slate-500"
-                  >
-                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  </button>
-                ) : (
-                  <div className="w-5 mr-1" />
-                )}
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-900 group-hover:text-primary transition-colors">{node.name}</span>
-                  {hasChildren && (
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                      {node.children?.length} {t('subcategories') || "danhmục con"}
-                    </span>
+    return nodes
+      .filter(node => shouldShowNode(node, searchTerm)) // Lọc bỏ các node không liên quan
+      .map(node => {
+        const isExpanded = expandedIds.has(node.id);
+        const hasChildren = node.children && node.children.length > 0;
+        const normalizedSearch = removeVietnameseTones(searchTerm);
+        const matchesSearch = searchTerm ? removeVietnameseTones(node.name).includes(normalizedSearch) : false;
+        
+        return (
+          <React.Fragment key={node.id}>
+            <tr className={`border-b border-slate-50 hover:bg-slate-50/50 transition-all duration-200 ${matchesSearch ? 'bg-primary/5' : ''}`}>
+              <td className="px-4 py-4 min-w-[200px]">
+                <div className="flex items-center" style={{ paddingLeft: `${level * 28}px` }}>
+                  {level > 0 && (
+                    <div className="w-5 flex items-center justify-center text-slate-300">
+                      <span className="w-4 h-px bg-slate-200" />
+                    </div>
                   )}
-                </div>
+                  {hasChildren ? (
+                    <button 
+                      onClick={() => toggleExpand(node.id)}
+                      className="p-1 hover:bg-slate-200 rounded-md transition-colors mr-1 text-slate-500"
+                    >
+                      {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </button>
+                  ) : (
+                    <div className="w-5 mr-1" />
+                  )}
+                  <div className="flex flex-col">
+                    <span className={`transition-colors ${matchesSearch ? 'text-primary font-extrabold' : 'font-bold text-slate-900 group-hover:text-primary'}`}>
+                      {node.name}
+                    </span>
+                    {hasChildren && (
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                        {node.children?.length} {t('subcategories') || "danhmục con"}
+                      </span>
+                    )}
+                  </div>
 
-              </div>
-            </td>
-            <td className="px-4 py-4 text-slate-500 text-sm max-w-[300px] truncate">
-              {node.description || '---'}
-            </td>
-            <td className="px-4 py-4">
-              <span className="text-xs font-mono text-slate-400">#{node.sort_order}</span>
-            </td>
-            <td className="px-4 py-4">
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                node.is_active === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
-              }`}>
-                {node.is_active === 1 ? <Eye size={10} /> : <EyeOff size={10} />}
-                {node.is_active === 1 ? t('active_status') : t('hidden_status')}
-              </span>
-            </td>
-            <td className="px-4 py-4 text-right">
-              <div className="flex items-center justify-end gap-2">
-                <button 
-                  onClick={() => handleOpenModal('edit', node)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title={t('edit')}
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button 
-                  onClick={() => handleDelete(node)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title={t('delete')}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </td>
-          </tr>
-          {isExpanded && node.children && renderRows(node.children, level + 1)}
-        </React.Fragment>
-      );
-    });
+                </div>
+              </td>
+              <td className="px-4 py-4 text-slate-500 text-sm max-w-[300px] truncate">
+                {node.description || '---'}
+              </td>
+              <td className="px-4 py-4">
+                <span className="text-xs font-mono text-slate-400">#{node.sort_order}</span>
+              </td>
+              <td className="px-4 py-4">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  node.is_active === 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  {node.is_active === 1 ? <Eye size={10} /> : <EyeOff size={10} />}
+                  {node.is_active === 1 ? t('active_status') : t('hidden_status')}
+                </span>
+              </td>
+              <td className="px-4 py-4 text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <button 
+                    onClick={() => handleOpenModal('edit', node)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title={t('edit')}
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(node)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title={t('delete')}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {isExpanded && node.children && renderRows(node.children, level + 1)}
+          </React.Fragment>
+        );
+      });
   };
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative min-h-[60vh] font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="text-primary" size={24} />
+      {/* Header with Search and Add Action */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-10 gap-6">
+        <div className="flex-shrink-0">
+          <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl shadow-sm">
+              <Layers className="text-primary" size={24} />
+            </div>
             {t('category_management')}
           </h2>
-          <p className="text-slate-400 text-sm mt-1">{t('latest_system_update') || "Cập nhật cấu trúc danh mục hệ thống"}</p>
+          <p className="text-slate-400 text-sm mt-1 ml-1 font-medium italic opacity-80">{t('latest_system_update') || "Cập nhật cấu trúc danh mục hệ thống"}</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal('create')}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-sm shadow-primary/20"
-        >
-          <Plus size={18} />
-          {t('add_category')}
-        </button>
-      </div>
 
-      <div className="mb-8">
-        <div className="relative max-w-xl mx-auto group">
-          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-            <Search size={22} strokeWidth={2.5} />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-max">
+          {/* Enhanced Search Bar */}
+          <div className="relative group w-full sm:min-w-[320px] lg:min-w-[400px]">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-all duration-300">
+              <Search size={18} strokeWidth={2.5} />
+            </div>
+            <input
+              type="text"
+              placeholder={t('search_by_name') || "Tìm kiếm bằng tên..."}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-primary focus:bg-white focus:shadow-lg focus:shadow-primary/5 transition-all duration-300"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Tìm kiếm bằng tên..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-base font-medium focus:outline-none focus:border-primary focus:bg-white focus:shadow-xl focus:shadow-primary/10 transition-all duration-300 placeholder:text-slate-400"
-          />
+
+          <button 
+            onClick={() => handleOpenModal('create')}
+            className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-600 active:scale-95 transition-all shadow-md shadow-primary/20 hover:shadow-primary/30 whitespace-nowrap"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            {t('add_category')}
+          </button>
         </div>
       </div>
 
