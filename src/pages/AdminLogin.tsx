@@ -119,7 +119,7 @@ export const AdminLogin: React.FC = () => {
           <div className="w-14 h-14 bg-primary/5 text-primary rounded-2xl flex items-center justify-center mb-6 ring-1 ring-primary/10 shadow-sm shadow-primary/5">
             <LayoutTemplate size={28} strokeWidth={1.5} />
           </div>
-          <Link to="/" className="text-4xl font-serif font-bold tracking-tight text-slate-900 mb-2 text-center">Aurelius</Link>
+          <Link to="/" className="text-4xl font-serif font-bold tracking-tight text-slate-900 mb-2 text-center">Furniture Luxury</Link>
           <div className="flex items-center gap-2">
             <div className="h-[1px] w-4 bg-slate-200" />
             <p className="text-slate-400 text-[10px] font-bold tracking-[0.3em] uppercase">Admin WellCome</p>

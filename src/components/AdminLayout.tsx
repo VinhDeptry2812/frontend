@@ -65,9 +65,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="flex items-center justify-between px-5 py-5 border-b border-slate-100">
           <Link to="/admin/dashboard" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-xs">AU</span>
+              <span className="text-white font-bold text-xs">FL</span>
             </div>
-            <span className="text-slate-900 font-bold text-base tracking-tight">Aurelius</span>
+            <span className="text-slate-900 font-bold text-base tracking-tight">Furniture Luxury</span>
           </Link>
           <button 
             className="lg:hidden text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
@@ -175,11 +175,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 className="hidden sm:flex items-center gap-3 hover:bg-slate-50 p-1.5 pr-3 rounded-2xl transition-all border border-transparent hover:border-slate-200"
               >
                 <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900 leading-tight">{user?.name || 'Administrator'}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{user?.email || 'admin@aurelius.com'}</p>
+                  <p className="text-sm font-bold text-slate-900 leading-tight">{user?.name}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{user?.email}</p>
                 </div>
                 <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-primary/10 uppercase shrink-0">
-                  {user?.name?.substring(0, 2) || 'AD'}
+                  {user?.name?.substring(0, 2)}
                 </div>
               </Link>
               
