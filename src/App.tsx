@@ -23,6 +23,8 @@ import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminCoupons } from './pages/admin/AdminCoupons';
 import { AdminProfile } from './pages/admin/AdminProfile';
+import { AdminOrders } from './pages/admin/AdminOrders';
+import { AdminProductStats } from './pages/admin/AdminProductStats';
 import { Product, CartItem } from './types';
 
 import { NotificationProvider } from './context/NotificationContext';
@@ -86,9 +88,11 @@ const App: React.FC = () => {
                 <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/employees" element={<AdminRoute><AdminLayout><AdminEmployees /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/products" element={<AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/product-stats" element={<AdminRoute><AdminLayout><AdminProductStats /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/categories" element={<AdminRoute><AdminLayout><AdminCategories /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><AdminCoupons /></AdminLayout></AdminRoute>} />
+                <Route path="/admin/orders" element={<AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>} />
                 <Route path="/admin/profile" element={<AdminRoute><AdminLayout><AdminProfile /></AdminLayout></AdminRoute>} />
                 <Route
                   path="*"

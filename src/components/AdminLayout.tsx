@@ -10,7 +10,9 @@ import {
   X,
   ChevronRight,
   Languages,
-  Ticket
+  Ticket,
+  ClipboardList,
+  BarChart
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,10 +39,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navItems = [
     { name: t('nav_dashboard'), path: '/admin/dashboard', icon: <LayoutDashboard size={18} /> },
     { name: t('nav_employees'), path: '/admin/employees', icon: <UserCircle size={18} />, superOnly: true },
-    { name: t('nav_products'), path: '/admin/products', icon: <Package size={18} /> },
-    { name: t('nav_categories'), path: '/admin/categories', icon: <Menu size={18} /> },
-    { name: t('nav_users'), path: '/admin/users', icon: <Users size={18} /> },
-    { name: t('nav_coupons'), path: '/admin/coupons', icon: <Ticket size={18} /> },
+    { name: t('nav_products') || 'Sản phẩm', path: '/admin/products', icon: <Package size={18} /> },
+    { name: t('nav_product_stats') || 'Thống kê', path: '/admin/product-stats', icon: <BarChart size={18} /> },
+    { name: t('nav_categories') || 'Danh mục', path: '/admin/categories', icon: <Menu size={18} /> },
+    { name: t('nav_orders') || 'Đơn hàng', path: '/admin/orders', icon: <ClipboardList size={18} /> },
+    { name: t('nav_users') || 'Người dùng', path: '/admin/users', icon: <Users size={18} /> },
+    { name: t('nav_coupons') || 'Mã giảm giá', path: '/admin/coupons', icon: <Ticket size={18} /> },
   ].filter(item => !item.superOnly || user?.role === 'superadmin');
 
   const currentNav = navItems.find(item => item.path === location.pathname);

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  ShoppingBag, 
-  ShieldCheck, 
-  LogOut, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  ShoppingBag,
+  ShieldCheck,
+  LogOut,
   Camera,
   ChevronRight,
   Settings,
@@ -92,8 +92,8 @@ export const Profile: React.FC = () => {
         setLoadingAddresses(true);
         const response = await api.get('/user/addresses');
         // Handle array response directly or inside data envelope
-        const addressesData = Array.isArray(response.data) ? response.data : 
-                             (Array.isArray(response.data?.data) ? response.data.data : []);
+        const addressesData = Array.isArray(response.data) ? response.data :
+          (Array.isArray(response.data?.data) ? response.data.data : []);
         setAddresses(addressesData);
       } catch (error) {
         console.error('Error fetching addresses:', error);
@@ -143,10 +143,10 @@ export const Profile: React.FC = () => {
     <div className="pt-32 pb-24 px-6 bg-slate-50 dark:bg-background-dark/50">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Sidebar - Profile Summary */}
           <div className="lg:col-span-1 space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm"
@@ -154,9 +154,9 @@ export const Profile: React.FC = () => {
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-6">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/10">
-                    <img 
-                      src={profile?.avatar || `https://ui-avatars.com/api/?name=${profile?.name}&background=0D1117&color=fff&size=128`} 
-                      alt="Avatar" 
+                    <img
+                      src={profile?.avatar || `https://ui-avatars.com/api/?name=${profile?.name}&background=0D1117&color=fff&size=128`}
+                      alt="Avatar"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -164,24 +164,24 @@ export const Profile: React.FC = () => {
                     <Camera size={18} />
                   </button>
                 </div>
-                
+
                 <h2 className="text-2xl font-serif font-bold mb-1">{profile?.name}</h2>
                 <p className="text-slate-500 text-sm mb-6 uppercase tracking-widest font-bold">Premium Member</p>
-                
+
                 <div className="flex items-center gap-2 text-slate-400 text-sm mb-8">
                   <Calendar size={14} />
                   <span>Joined {new Date(profile?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                 </div>
 
                 <div className="w-full space-y-3">
-                  <button 
+                  <button
                     onClick={() => navigate('/profile/edit')}
                     className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
                   >
                     <Settings size={18} />
                     Edit Profile
                   </button>
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="w-full py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/10 transition-all flex items-center justify-center gap-2"
                   >
@@ -192,7 +192,7 @@ export const Profile: React.FC = () => {
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
@@ -214,44 +214,44 @@ export const Profile: React.FC = () => {
 
           {/* Main Content - Details */}
           <div className="lg:col-span-2 space-y-8">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm"
             >
               <h3 className="text-xl font-serif font-bold mb-8">Personal Information</h3>
-              
+
               <div className="space-y-6">
-                <DetailItem 
-                  icon={<User size={20} className="text-primary" />} 
-                  label="Full Name" 
-                  value={profile?.name || 'N/A'} 
+                <DetailItem
+                  icon={<User size={20} className="text-primary" />}
+                  label="Full Name"
+                  value={profile?.name || 'N/A'}
                 />
-                <DetailItem 
-                  icon={<Mail size={20} className="text-primary" />} 
-                  label="Email Address" 
-                  value={profile?.email || 'N/A'} 
+                <DetailItem
+                  icon={<Mail size={20} className="text-primary" />}
+                  label="Email Address"
+                  value={profile?.email || 'N/A'}
                 />
-                <DetailItem 
-                  icon={<Phone size={20} className="text-primary" />} 
-                  label="Phone Number" 
-                  value={profile?.phone || 'Not provided'} 
+                <DetailItem
+                  icon={<Phone size={20} className="text-primary" />}
+                  label="Phone Number"
+                  value={profile?.phone || 'Not provided'}
                 />
-                <DetailItem 
-                  icon={<User size={20} className="text-primary" />} 
-                  label="Gender" 
-                  value={profile?.gender || 'Not provided'} 
+                <DetailItem
+                  icon={<User size={20} className="text-primary" />}
+                  label="Gender"
+                  value={profile?.gender || 'Not provided'}
                 />
-                <DetailItem 
-                  icon={<Calendar size={20} className="text-primary" />} 
-                  label="Birthday" 
-                  value={profile?.birthday || 'Not provided'} 
+                <DetailItem
+                  icon={<Calendar size={20} className="text-primary" />}
+                  label="Birthday"
+                  value={profile?.birthday || 'Not provided'}
                 />
               </div>
             </motion.div>
 
             {/* My Addresses Section */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -259,14 +259,14 @@ export const Profile: React.FC = () => {
             >
               <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="text-xl font-serif font-bold">My Addresses</h3>
-                <button 
+                <button
                   onClick={() => navigate('/profile/address/new')}
                   className="text-sm font-bold text-primary hover:underline flex items-center gap-1"
                 >
                   Add New
                 </button>
               </div>
-              
+
               <div className="p-6 divide-y divide-slate-100 dark:divide-slate-800">
                 {loadingAddresses ? (
                   <div className="py-8 flex justify-center">
@@ -294,23 +294,23 @@ export const Profile: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <button 
+                          <button
                             onClick={() => navigate(`/profile/address/edit/${address.id}`)}
                             className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
                             disabled={deletingId === address.id}
                           >
                             Edit
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteAddress(address.id)}
                             disabled={deletingId === address.id}
                             className="text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-full transition-colors disabled:opacity-50"
                             title="Xóa địa chỉ"
                           >
                             {deletingId === address.id ? (
-                               <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                             ) : (
-                               <Trash2 size={16} />
+                              <Trash2 size={16} />
                             )}
                           </button>
                         </div>
@@ -324,7 +324,7 @@ export const Profile: React.FC = () => {
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
@@ -336,30 +336,30 @@ export const Profile: React.FC = () => {
                   View All <ChevronRight size={16} />
                 </button>
               </div>
-              
+
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                <OrderItem 
-                  id="#ORD-9821" 
-                  date="Mar 08, 2024" 
-                  status="Delivered" 
-                  amount="$1,250.00" 
+                <OrderItem
+                  id="#ORD-9821"
+                  date="Mar 08, 2024"
+                  status="Delivered"
+                  amount="$1,250.00"
                 />
-                <OrderItem 
-                  id="#ORD-9754" 
-                  date="Feb 24, 2024" 
-                  status="In Transit" 
-                  amount="$890.00" 
+                <OrderItem
+                  id="#ORD-9754"
+                  date="Feb 24, 2024"
+                  status="In Transit"
+                  amount="$890.00"
                 />
-                <OrderItem 
-                  id="#ORD-9612" 
-                  date="Jan 30, 2024" 
-                  status="Processing" 
-                  amount="$2,100.00" 
+                <OrderItem
+                  id="#ORD-9612"
+                  date="Jan 30, 2024"
+                  status="Processing"
+                  amount="$2,100.00"
                 />
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -412,11 +412,10 @@ const OrderItem: React.FC<{ id: string, date: string, status: string, amount: st
     </div>
     <div className="text-right">
       <p className="font-bold text-sm mb-1">{amount}</p>
-      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-        status === 'Delivered' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' :
-        status === 'In Transit' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30' :
-        'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30'
-      }`}>
+      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${status === 'Delivered' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' :
+          status === 'In Transit' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30' :
+            'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30'
+        }`}>
         {status}
       </span>
     </div>

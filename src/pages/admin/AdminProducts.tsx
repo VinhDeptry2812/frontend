@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, Package, PackageX, Search, Filter, DollarSign, ArrowUpDown, X, Upload, Eye, ChevronLeft, ChevronRight, Calendar, Tag, Layers, Boxes, Percent } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, Package, PackageX, Search, Filter, DollarSign, ArrowUpDown, X, Upload, Eye, ChevronLeft, ChevronRight, Calendar, Tag, Layers, Boxes, Percent, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -122,6 +123,15 @@ export const AdminProducts: React.FC = () => {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [existingGallery, setExistingGallery] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete Modal States
+  const [isDeleteProductModalOpen, setIsDeleteProductModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<ProductData | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+
+  const [isDeleteVariantModalOpen, setIsDeleteVariantModalOpen] = useState(false);
+  const [variantToDelete, setVariantToDelete] = useState<VariantData | null>(null);
+  const [isDeletingVariant, setIsDeletingVariant] = useState(false);
 
   // Variant CRUD State
   const [isVariantListModalOpen, setIsVariantListModalOpen] = useState(false);
@@ -548,16 +558,25 @@ export const AdminProducts: React.FC = () => {
 
   const handleDeleteVariant = async (v: VariantData) => {
     if (!selectedProductForVariants) return;
+    setVariantToDelete(v);
+    setIsDeleteVariantModalOpen(true);
+  };
+
+  const confirmDeleteVariant = async () => {
+    if (!selectedProductForVariants || !variantToDelete) return;
+    setIsDeletingVariant(true);
     const prdId = getProductId(selectedProductForVariants);
-    if (window.confirm(`Xác nhận xóa biến thể ${v.sku}?`)) {
-      try {
-        await api.delete(`/products/${prdId}/variants/${v.id}`);
-        showNotification("Xóa biến thể thành công!", "success");
-        fetchVariants(prdId);
-        fetchProducts();
-      } catch (err: any) {
-        showNotification("Lỗi xóa biến thể: " + (err.response?.data?.message || err.message), "error");
-      }
+    try {
+      await api.delete(`/products/${prdId}/variants/${variantToDelete.id}`);
+      showNotification("Xóa biến thể thành công!", "success");
+      setIsDeleteVariantModalOpen(false);
+      setVariantToDelete(null);
+      fetchVariants(prdId);
+      fetchProducts();
+    } catch (err: any) {
+      showNotification("Lỗi xóa biến thể: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setIsDeletingVariant(false);
     }
   };
 
@@ -616,19 +635,25 @@ export const AdminProducts: React.FC = () => {
   };
 
   const handleDelete = async (prd: ProductData) => {
-    const prdId = getProductId(prd);
-    const confirmMsg = language === 'vi'
-      ? `Bạn có chắc muốn xóa sản phẩm ${prd.name}? Hành động này không thể hoàn tác.`
-      : `Are you sure you want to delete ${prd.name}? This action cannot be undone.`;
-    if (window.confirm(confirmMsg)) {
-      try {
-        await api.delete(`/products/${prdId}`);
-        showNotification('Xóa sản phẩm thành công!', 'success');
-        fetchProducts();
-      } catch (error: any) {
-        console.error("Lỗi xóa sản phẩm:", error);
-        showNotification("Không thể xóa sản phẩm: " + (error.response?.data?.message || error.message), 'error');
-      }
+    setProductToDelete(prd);
+    setIsDeleteProductModalOpen(true);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    setIsDeletingProduct(true);
+    const prdId = getProductId(productToDelete);
+    try {
+      await api.delete(`/products/${prdId}`);
+      showNotification('Xóa sản phẩm thành công!', 'success');
+      setIsDeleteProductModalOpen(false);
+      setProductToDelete(null);
+      fetchProducts();
+    } catch (error: any) {
+      console.error("Lỗi xóa sản phẩm:", error);
+      showNotification("Không thể xóa sản phẩm: " + (error.response?.data?.message || error.message), 'error');
+    } finally {
+      setIsDeletingProduct(false);
     }
   };
 
@@ -1023,12 +1048,13 @@ export const AdminProducts: React.FC = () => {
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-semibold text-slate-600 mb-1.5">{t('price')} *</label>
-                    <input required type="number" value={formData.base_price} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0" />
+                    <input required min="0" type="number" value={formData.base_price} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" placeholder="0" />
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-semibold text-slate-600 mb-1.5">Sale {t('price')}</label>
                     <input 
                       type="number" 
+                      min="0"
                       value={formData.sale_price} 
                       onChange={e => setFormData({ ...formData, sale_price: e.target.value })} 
                       className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" 
@@ -1052,6 +1078,7 @@ export const AdminProducts: React.FC = () => {
                     <input 
                       required
                       type="number" 
+                      min="0"
                       value={formData.stock_quantity} 
                       onChange={e => setFormData({ ...formData, stock_quantity: e.target.value })} 
                       className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary focus:ring-1 focus:ring-primary shadow-sm" 
@@ -1219,7 +1246,7 @@ export const AdminProducts: React.FC = () => {
                               {v.size && <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold uppercase">{v.size}</span>}
                             </div>
                           </td>
-                          <td className="px-4 py-3 font-bold">
+                          <td className="px-4 py-3 font-bold text-slate-900">
                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(v.price))}
                           </td>
                           <td className="px-4 py-3">
@@ -1271,14 +1298,14 @@ export const AdminProducts: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-1.5">Giá biến thể *</label>
-                  <input required type="number" value={variantFormData.price} onChange={e => setVariantFormData({ ...variantFormData, price: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary shadow-sm" placeholder="0" />
+                  <input required min="0" type="number" value={variantFormData.price} onChange={e => setVariantFormData({ ...variantFormData, price: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary shadow-sm" placeholder="0" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-1.5">Số lượng tồn kho *</label>
-                  <input required type="number" value={variantFormData.stock_quantity} onChange={e => setVariantFormData({ ...variantFormData, stock_quantity: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary shadow-sm" placeholder="0" />
+                  <input required min="0" type="number" value={variantFormData.stock_quantity} onChange={e => setVariantFormData({ ...variantFormData, stock_quantity: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 focus:border-primary shadow-sm" placeholder="0" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-1.5">Màu sắc</label>
@@ -1332,21 +1359,21 @@ export const AdminProducts: React.FC = () => {
                     <div className="grid grid-cols-3 gap-3">
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Rộng (cm)</label>
-                        <input type="number" value={variantFormData.width_cm} onChange={e => setVariantFormData({ ...variantFormData, width_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <input type="number" min="0" value={variantFormData.width_cm} onChange={e => setVariantFormData({ ...variantFormData, width_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Sâu (cm)</label>
-                        <input type="number" value={variantFormData.depth_cm} onChange={e => setVariantFormData({ ...variantFormData, depth_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <input type="number" min="0" value={variantFormData.depth_cm} onChange={e => setVariantFormData({ ...variantFormData, depth_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Cao (cm)</label>
-                        <input type="number" value={variantFormData.height_cm} onChange={e => setVariantFormData({ ...variantFormData, height_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <input type="number" min="0" value={variantFormData.height_cm} onChange={e => setVariantFormData({ ...variantFormData, height_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Nặng (kg)</label>
-                        <input type="number" value={variantFormData.weight_kg} onChange={e => setVariantFormData({ ...variantFormData, weight_kg: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <input type="number" min="0" value={variantFormData.weight_kg} onChange={e => setVariantFormData({ ...variantFormData, weight_kg: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Chiều cao ghế (cm)</label>
@@ -1404,6 +1431,107 @@ export const AdminProducts: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Delete Product Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteProductModalOpen && productToDelete && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white border border-slate-200 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle size={40} strokeWidth={1.5} />
+                </div>
+                
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  {t('confirm_delete') || "Xác nhận xóa?"}
+                </h3>
+                
+                <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                  {t('delete_warning_prefix') || "Bạn có chắc chắn muốn xóa sản phẩm"} 
+                  <span className="font-bold text-slate-900 px-1">"{productToDelete.name}"</span>? 
+                  {t('delete_warning_suffix') || "Hành động này không thể hoàn tác."}
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={confirmDeleteProduct}
+                    disabled={isDeletingProduct}
+                    className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
+                  >
+                    {isDeletingProduct ? <Loader2 className="animate-spin" size={18} /> : t('confirm_delete') || "Xác nhận xóa"}
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      setIsDeleteProductModalOpen(false);
+                      setProductToDelete(null);
+                    }}
+                    disabled={isDeletingProduct}
+                    className="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Variant Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteVariantModalOpen && variantToDelete && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white border border-slate-200 rounded-[2.5rem] w-full max-w-sm overflow-hidden shadow-2xl"
+            >
+              <div className="p-8 text-center">
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle size={40} strokeWidth={1.5} />
+                </div>
+                
+                <h3 className="text-xl font-bold text-slate-900 mb-2">
+                  Xác nhận xóa biến thể?
+                </h3>
+                
+                <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                  Bạn có chắc chắn muốn xóa biến thể  
+                  <span className="font-bold text-slate-900 px-1">"{variantToDelete.sku}"</span>? 
+                  Hành động này không thể hoàn tác.
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={confirmDeleteVariant}
+                    disabled={isDeletingVariant}
+                    className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
+                  >
+                    {isDeletingVariant ? <Loader2 className="animate-spin" size={18} /> : "Xác nhận xóa"}
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      setIsDeleteVariantModalOpen(false);
+                      setVariantToDelete(null);
+                    }}
+                    disabled={isDeletingVariant}
+                    className="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
