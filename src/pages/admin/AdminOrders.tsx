@@ -83,15 +83,20 @@ export const AdminOrders: React.FC = () => {
         : `/admin/orders?page=${page + 1}`;
       
       const response = await api.get(url);
-      const data = response.data.data ? response.data.data : response.data;
       
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else {
-         setOrders(data.orders || []);
+      let ordersArray = [];
+      if (Array.isArray(response.data?.data?.data)) {
+        ordersArray = response.data.data.data;
+      } else if (Array.isArray(response.data?.data)) {
+        ordersArray = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        ordersArray = response.data;
+      } else if (Array.isArray(response.data?.data?.orders)) {
+        ordersArray = response.data.data.orders;
       }
 
-      setNextCursor(response.data.next_cursor || null);
+      setOrders(ordersArray);
+      setNextCursor(response.data?.data?.next_cursor || response.data?.next_cursor || null);
     } catch (err: any) {
       console.error(err);
       showNotification('Không thể lấy danh sách đơn hàng', 'error');
