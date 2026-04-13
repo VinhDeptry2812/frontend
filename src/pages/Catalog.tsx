@@ -99,7 +99,7 @@ export const Catalog: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchInput, categoryId, sortBy, sortOrder, minPrice, maxPrice, urlSearch]);
+  }, [searchInput, categoryId, sortBy, sortOrder, minPrice, maxPrice, urlSearch, onSale]);
 
   // Re-fetch khi filter thay đổi
   useEffect(() => {
