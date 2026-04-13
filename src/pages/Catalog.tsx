@@ -57,7 +57,7 @@ export const Catalog: React.FC = () => {
       setOnSale(urlOnSale);
       setPrevCursors([]);
     }
-  }, [urlSearch, urlCategoryId, urlOnSale]);
+  }, [urlSearch, urlCategoryId, urlOnSale, categoryId, onSale]);
 
   // Load categories
   useEffect(() => {
