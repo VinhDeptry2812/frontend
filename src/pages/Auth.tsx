@@ -22,10 +22,10 @@ export const Auth: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
 
         <div className="absolute bottom-20 left-20 max-w-md text-white">
-          <h2 className="text-5xl font-serif font-bold mb-6 leading-tight">Join the Circle of Excellence.</h2>
+          <h2 className="text-5xl font-serif font-bold mb-6 leading-tight">Tham Gia Cộng Đồng Tinh Hoa.</h2>
           <p className="text-slate-300 text-lg">
-            Create an account to save your favorite pieces, track orders, and receive
-            exclusive design consultations.
+            Tạo tài khoản để lưu các sản phẩm yêu thích, theo dõi đơn hàng và nhận
+            tư vấn thiết kế độc quyền.
           </p>
         </div>
       </div>

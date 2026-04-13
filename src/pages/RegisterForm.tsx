@@ -64,17 +64,17 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
         >
-            <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-            <p className="text-slate-400 mb-8">Join our community of design enthusiasts.</p>
+            <h1 className="text-3xl font-bold mb-2">Tạo Tài Khoản</h1>
+            <p className="text-slate-400 mb-8">Tham gia cộng đồng những người yêu thiết kế của chúng tôi.</p>
 
             <form className="space-y-6" onSubmit={handleRegister}>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Full Name</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Họ và Tên</label>
                     <div className="relative">
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
                             type="text"
-                            placeholder="John Doe"
+                            placeholder="Nguyễn Văn A"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -83,7 +83,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Email Address</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Địa Chỉ Email</label>
                     <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
@@ -96,7 +96,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Password</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Mật Khẩu</label>
                     <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
@@ -110,7 +110,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Confirm Password</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Xác Nhận Mật Khẩu</label>
                     <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
@@ -124,14 +124,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <button type="submit" disabled={loading} className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
-                    {loading ? "Đang xử lý..." : "Create Account"}
+                    {loading ? "Đang xử lý..." : "Tạo Tài Khoản"}
                     {!loading && <ArrowRight size={18} />}
                 </button>
             </form>
 
             <p className="mt-10 text-center text-slate-400 text-sm">
-                Already have an account?{' '}
-                <button onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Sign In</button>
+                Đã có tài khoản?{' '}
+                <button onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Đăng Nhập</button>
             </p>
         </motion.div>
     );

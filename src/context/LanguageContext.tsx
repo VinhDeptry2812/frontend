@@ -230,6 +230,7 @@ const translations: Translations = {
   'limit_label': { vi: 'Hiển thị:', en: 'Show:' },
   'top_n': { vi: 'Top', en: 'Top' },
 
+
   // Admin Profile
   'admin_profile_title': { vi: 'Thông Tin Cá Nhân', en: 'My Profile' },
   'admin_profile_subtitle': { vi: 'Quản lý thông tin tài khoản quản trị của bạn', en: 'Manage your administrative account details' },

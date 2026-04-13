@@ -64,12 +64,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
         >
-            <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-            <p className="text-slate-400 mb-8">Enter your credentials to access your account.</p>
+            <h1 className="text-3xl font-bold mb-2">Chào Mừng Trở Lại</h1>
+            <p className="text-slate-400 mb-8">Nhập thông tin đăng nhập để truy cập tài khoản của bạn.</p>
 
             <form className="space-y-6" onSubmit={handleLogin}>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Email Address</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Địa Chỉ Email</label>
                     <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
@@ -83,13 +83,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
                 </div>
                 <div>
                     <div className="flex justify-between mb-2">
-                        <label className="block text-xs font-bold uppercase tracking-widest text-slate-500">Password</label>
+                        <label className="block text-xs font-bold uppercase tracking-widest text-slate-500">Mật Khẩu</label>
                         <button
                             type="button"
                             onClick={() => setMode('recover')}
                             className="text-xs font-bold text-primary hover:underline"
                         >
-                            Forgot Password?
+                            Quên mật khẩu?
                         </button>
                     </div>
                     <div className="relative">
@@ -104,7 +104,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <button type="submit" disabled={loading} className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
-                    {loading ? "Đang xử lý..." : "Sign In"}
+                    {loading ? "Đang xử lý..." : "Đăng Nhập"}
                     {!loading && <ArrowRight size={18} />}
                 </button>
             </form>
@@ -112,7 +112,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
             <div className="mt-10">
                 <div className="relative flex items-center justify-center mb-8">
                     <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-                    <span className="relative px-4 bg-background-dark text-xs font-bold text-slate-500 uppercase tracking-widest">Or continue with</span>
+                    <span className="relative px-4 bg-background-dark text-xs font-bold text-slate-500 uppercase tracking-widest">Hoặc tiếp tục với</span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-3 bg-surface-dark border border-slate-800 py-3 rounded-xl hover:bg-slate-800 transition-colors">
@@ -131,8 +131,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ setMode }) => {
             </div>
 
             <p className="mt-10 text-center text-slate-400 text-sm">
-                Don't have an account?{' '}
-                <button onClick={() => setMode('register')} className="text-primary font-bold hover:underline">Create Account</button>
+                Chưa có tài khoản?{' '}
+                <button onClick={() => setMode('register')} className="text-primary font-bold hover:underline">Tạo Tài Khoản</button>
             </p>
         </motion.div>
     );

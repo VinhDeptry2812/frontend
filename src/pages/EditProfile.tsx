@@ -7,7 +7,8 @@ import {
   ArrowLeft,
   Save,
   Loader2,
-  Calendar
+  Calendar,
+  ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -96,29 +97,32 @@ export const EditProfile: React.FC = () => {
   }
 
   return (
-    <div className="pt-32 pb-24 px-6 bg-slate-50 dark:bg-background-dark/50">
+    <div className="pt-32 pb-24 px-6 bg-bg-ivory min-h-screen">
       <div className="max-w-2xl mx-auto">
         <motion.button
           onClick={() => navigate('/profile')}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors mb-8 font-bold"
+          className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors mb-8 font-bold text-sm uppercase tracking-wider"
         >
-          <ArrowLeft size={20} />
-          Back to Profile
+          <ArrowLeft size={18} />
+          Quay lại hồ sơ
         </motion.button>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-surface-dark border border-slate-100 dark:border-slate-800 rounded-3xl p-8 shadow-sm"
+          className="bg-white border border-stone-100 rounded-[2rem] p-10 shadow-sm shadow-stone-200/50"
         >
-          <h2 className="text-3xl font-serif font-bold mb-8">Edit Profile</h2>
+          <div className="mb-10 text-center md:text-left">
+            <h2 className="text-3xl font-serif font-bold text-text-dark mb-2">Chỉnh sửa hồ sơ</h2>
+            <p className="text-text-muted text-sm">Cập nhật thông tin cá nhân của bạn để có trải nghiệm tốt hơn</p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <User size={14} /> Full Name
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted flex items-center gap-2 ml-1">
+                <User size={13} className="text-primary" /> Họ và tên
               </label>
               <input
                 type="text"
@@ -126,65 +130,73 @@ export const EditProfile: React.FC = () => {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full bg-slate-50 dark:bg-background-dark border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Enter your full name"
+                className="w-full bg-stone-50 border border-stone-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all text-text-dark font-medium"
+                placeholder="Nhập họ và tên của bạn"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <Mail size={14} /> Email Address
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted flex items-center gap-2 ml-1">
+                <Mail size={13} className="text-primary" /> Địa chỉ Email
               </label>
-              <input
-                type="email"
-                value={profile?.email}
-                disabled
-                className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 text-slate-500 cursor-not-allowed"
-              />
-              <p className="text-[10px] text-slate-400">Email cannot be changed.</p>
+              <div className="relative group">
+                <input
+                  type="email"
+                  value={profile?.email}
+                  disabled
+                  className="w-full bg-stone-100/50 border border-stone-100 rounded-2xl py-4 px-6 text-text-muted cursor-not-allowed font-medium"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                   <span className="text-[10px] bg-stone-200 text-stone-500 px-2 py-1 rounded-md font-bold uppercase">Cố định</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-stone-400 ml-1">Email là định danh duy nhất và không thể thay đổi.</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <Phone size={14} /> Phone Number
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted flex items-center gap-2 ml-1">
+                <Phone size={13} className="text-primary" /> Số điện thoại
               </label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full bg-slate-50 dark:bg-background-dark border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Enter your phone number"
+                className="w-full bg-stone-50 border border-stone-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all text-text-dark font-medium"
+                placeholder="Nhập số điện thoại của bạn"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                  <User size={14} /> Gender
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted flex items-center gap-2 ml-1">
+                  <User size={13} className="text-primary" /> Giới tính
                 </label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  className="w-full bg-slate-50 dark:bg-background-dark border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
-                >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+                <div className="relative">
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    className="w-full bg-stone-50 border border-stone-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all text-text-dark font-medium appearance-none"
+                  >
+                    <option value="male">Nam</option>
+                    <option value="female">Nữ</option>
+                    <option value="other">Khác</option>
+                  </select>
+                  <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                  <Calendar size={14} /> Birthday
+              <div className="space-y-3">
+                <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted flex items-center gap-2 ml-1">
+                  <Calendar size={13} className="text-primary" /> Ngày sinh
                 </label>
                 <input
                   type="date"
                   name="birthday"
                   value={formData.birthday}
                   onChange={handleInputChange}
-                  className="w-full bg-slate-50 dark:bg-background-dark border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full bg-stone-50 border border-stone-100 rounded-2xl py-4 px-6 outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all text-text-dark font-medium custom-date-input"
                 />
               </div>
             </div>
@@ -193,17 +205,17 @@ export const EditProfile: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-70"
+                className="w-full py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary-dark transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-70 active:scale-[0.98]"
               >
                 {saving ? (
                   <>
-                    <Loader2 size={20} className="animate-spin" />
-                    Saving Changes...
+                    <Loader2 size={18} className="animate-spin" />
+                    Đang lưu thay đổi...
                   </>
                 ) : (
                   <>
-                    <Save size={20} />
-                    Save Changes
+                    <Save size={18} />
+                    Lưu thay đổi
                   </>
                 )}
               </button>

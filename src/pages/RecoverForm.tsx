@@ -46,12 +46,12 @@ export const RecoverForm: React.FC<RecoverFormProps> = ({ setMode }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
         >
-            <h1 className="text-3xl font-bold mb-2">Recover Access</h1>
-            <p className="text-slate-400 mb-8">Enter your email to receive recovery instructions.</p>
+            <h1 className="text-3xl font-bold mb-2">Khôi Phục Mật Khẩu</h1>
+            <p className="text-slate-400 mb-8">Nhập email của bạn để nhận hướng dẫn khôi phục.</p>
 
             <form className="space-y-6" onSubmit={handleRecover}>
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Email Address</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Địa Chỉ Email</label>
                     <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
@@ -65,14 +65,14 @@ export const RecoverForm: React.FC<RecoverFormProps> = ({ setMode }) => {
                     </div>
                 </div>
                 <button type="submit" disabled={loading} className="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-primary/20 disabled:opacity-50">
-                    {loading ? "Đang xử lý..." : "Send Instructions"}
+                    {loading ? "Đang xử lý..." : "Gửi Hướng Dẫn"}
                     {!loading && <ArrowRight size={18} />}
                 </button>
             </form>
 
             <p className="mt-10 text-center text-slate-400 text-sm">
-                Remember your password?{' '}
-                <button onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Back to Sign In</button>
+                Nhớ mật khẩu rồi?{' '}
+                <button onClick={() => setMode('login')} className="text-primary font-bold hover:underline">Quay lại Đăng Nhập</button>
             </p>
         </motion.div>
     );
