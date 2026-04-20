@@ -38,7 +38,7 @@ interface OrderData {
   id: number;
   user_id: number;
   total_amount: number;
-  status: string;
+  order_status: string;
   payment_method: string;
   payment_status: string;
   shipping_address: string;
@@ -73,6 +73,7 @@ export const AdminOrders: React.FC = () => {
 
   useEffect(() => {
     fetchOrders(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOrders = async (page: number, cursor?: string | null) => {
@@ -95,7 +96,10 @@ export const AdminOrders: React.FC = () => {
         ordersArray = response.data.data.orders;
       }
 
-      setOrders(ordersArray);
+      setOrders(ordersArray.map((o: any) => ({
+        ...o,
+        order_status: o.order_status || 'pending'
+      })));
       setNextCursor(response.data?.data?.next_cursor || response.data?.next_cursor || null);
     } catch (err: any) {
       console.error(err);
@@ -125,7 +129,11 @@ export const AdminOrders: React.FC = () => {
     try {
       setLoadingDetail(true);
       const response = await api.get(`/admin/orders/${order.id}`);
-      setSelectedOrder(response.data.data || response.data);
+      const detailData = response.data.data || response.data;
+      setSelectedOrder({
+        ...detailData,
+        order_status: detailData.order_status || 'pending'
+      });
     } catch (err: any) {
       console.error(err);
       showNotification('Không thể lấy chi tiết đơn hàng', 'error');
@@ -145,23 +153,28 @@ export const AdminOrders: React.FC = () => {
       const currentOrder = orders.find(o => o.id === orderId) || selectedOrder;
       
       const payload = {
-        order_status: currentOrder?.status,
-        payment_status: currentOrder?.payment_status,
+        order_status: currentOrder?.order_status || 'pending',
+        payment_status: currentOrder?.payment_status || 'pending',
         [field]: value
       };
       
-      if (field === 'order_status') payload.order_status = value;
-      if (field === 'payment_status') payload.payment_status = value;
-
       await api.put(`/admin/orders/${orderId}/status`, payload);
       
       showNotification('Đã cập nhật trạng thái đơn hàng', 'success');
       
       // Update local state
       if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status: payload.order_status || selectedOrder.status, payment_status: payload.payment_status || selectedOrder.payment_status });
+        setSelectedOrder({ 
+          ...selectedOrder, 
+          order_status: field === 'order_status' ? value : (selectedOrder.order_status || 'pending'), 
+          payment_status: field === 'payment_status' ? value : (selectedOrder.payment_status || 'pending') 
+        });
       }
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: payload.order_status || o.status, payment_status: payload.payment_status || o.payment_status } : o));
+      setOrders(prev => prev.map(o => o.id === orderId ? { 
+        ...o, 
+        order_status: field === 'order_status' ? value : (o.order_status || 'pending'), 
+        payment_status: field === 'payment_status' ? value : (o.payment_status || 'pending') 
+      } : o));
     } catch (err: any) {
       console.error(err);
       showNotification('Lỗi khi cập nhật trạng thái', 'error');
@@ -171,7 +184,8 @@ export const AdminOrders: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status?.toLowerCase()) {
+    const s = status?.toLowerCase() || 'pending';
+    switch (s) {
       case 'pending':
         return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-600"><Clock size={12} /> {t('status_pending') || 'Chờ xử lý'}</span>;
       case 'processing':
@@ -183,7 +197,7 @@ export const AdminOrders: React.FC = () => {
       case 'cancelled':
         return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-600"><Ban size={12} /> {t('status_cancelled') || 'Đã hủy'}</span>;
       default:
-        return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600">{status}</span>;
+        return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 uppercase">{s}</span>;
     }
   };
 
@@ -303,7 +317,7 @@ export const AdminOrders: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          {getStatusBadge(order.status)}
+                          {getStatusBadge(order.order_status)}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button 
@@ -468,7 +482,7 @@ export const AdminOrders: React.FC = () => {
                           <div>
                             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Trạng thái Giao hàng</label>
                             <select 
-                              value={selectedOrder.status}
+                              value={selectedOrder.order_status}
                               onChange={(e) => handleStatusChange(selectedOrder.id, 'order_status', e.target.value)}
                               disabled={isSubmitting}
                               className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 cursor-pointer disabled:opacity-50"
