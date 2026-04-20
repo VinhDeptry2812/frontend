@@ -131,7 +131,7 @@ export const AdminDashboard: React.FC = () => {
       icon: <DollarSign size={20} />, 
       color: "from-indigo-500 to-blue-600",
       bgLight: "bg-indigo-50 text-indigo-600",
-      link: "/admin/stats"
+      link: "/admin/product-stats"
     },
     { 
       title: 'Đơn hàng cần duyệt', 
@@ -151,7 +151,7 @@ export const AdminDashboard: React.FC = () => {
       icon: <Users size={20} />, 
       color: "from-violet-500 to-purple-600",
       bgLight: "bg-violet-50 text-violet-600",
-      link: "/admin/products"
+      link: "/admin/users"
     },
     { 
       title: t('avg_order_value') || 'Giá trị đơn TB', 
@@ -159,7 +159,7 @@ export const AdminDashboard: React.FC = () => {
       icon: <TrendingUp size={20} />, 
       color: "from-blue-500 to-cyan-600",
       bgLight: "bg-blue-50 text-blue-600",
-      link: "/admin/stats"
+      link: "/admin/product-stats"
     },
   ];
 
@@ -243,10 +243,10 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   )}
 
-                  <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-400">Xem chi tiết</span>
-                    <ChevronRight size={12} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
-                  </div>
+                  <Link to={stat.link} className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between group/link">
+                    <span className="text-[10px] font-bold text-slate-400 group-hover/link:text-indigo-600 transition-colors">Xem chi tiết</span>
+                    <ChevronRight size={12} className="text-slate-300 group-hover/link:text-indigo-600 group-hover/link:translate-x-1 transition-all" />
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -356,7 +356,7 @@ export const AdminDashboard: React.FC = () => {
                    <p className="text-indigo-300/80 text-xs font-bold uppercase tracking-[0.2em] mb-6">Thành viên đăng ký</p>
                    
                    <Link to="/admin/products" className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
-                      <span className="text-xs font-black uppercase tracking-wide">Quản lý kho</span>
+                      <span className="text-xs font-black uppercase tracking-wide">Quản lý sản phẩm</span>
                       <ChevronRight size={16} className="text-white/40 group-hover:translate-x-1 transition-transform" />
                    </Link>
                 </div>
