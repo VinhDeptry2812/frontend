@@ -89,24 +89,43 @@ export const Checkout: React.FC = () => {
 
     setLoading(true);
     try {
-      const payload: CheckoutData = {
-        ...form,
+      const payload = {
+        receiver_name: form.receiver_name,
+        receiver_phone: form.receiver_phone,
+        province_id: form.province_id,
+        district_id: form.district_id,
+        ward_id: form.ward_id,
+        address_detail: form.address_detail,
+        payment_method: form.payment_method,
+        note: form.note || undefined,
         coupon_code: couponCode || undefined,
-        items: items.map(item => ({
-          product_id: item.product_id,
-          product_variant_id: item.product_variant_id,
-          quantity: item.quantity,
-        })),
+        items: items.map(item => {
+          const product = item.product;
+          const variant = item.variant;
+          const price = variant?.price ?? product?.base_price ?? 0;
+          
+          const mappedItem: any = {
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: price
+          };
+          
+          if (variant && variant.id) {
+            mappedItem.product_variant_id = variant.id;
+          }
+          
+          return mappedItem;
+        })
       };
       const res = await checkout(payload);
-      const order = res.data?.order;
-      setOrderId(order?.id || null);
+      // The API might return the order differently (e.g. res.data.data.order or res.data.order or res.data.id)
+      const order = res.data?.order || res.data?.data || res.data;
+      setOrderId(order?.id || order?.order_id || null);
       setOrderSuccess(true);
       await clearAll();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.';
-      showNotification(msg, 'error');
+      showNotification(err.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.', 'error');
     } finally {
       setLoading(false);
     }

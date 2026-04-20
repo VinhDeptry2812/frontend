@@ -36,7 +36,8 @@ interface UserAddress {
 interface Order {
   id: number;
   status: string;
-  total_price: number;
+  total_price?: number;
+  total_amount?: number;
   created_at: string;
 }
 
@@ -97,7 +98,12 @@ export const Profile: React.FC = () => {
     if (activeTab === 'orders' && orders.length === 0) {
       setLoadingOrders(true);
       getOrders().then(res => {
-        const d = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        let d = [];
+        if (Array.isArray(res.data?.data?.data)) d = res.data.data.data;
+        else if (Array.isArray(res.data?.data)) d = res.data.data;
+        else if (Array.isArray(res.data)) d = res.data;
+        else if (Array.isArray(res.data?.data?.orders)) d = res.data.data.orders;
+        else if (Array.isArray(res.data?.orders)) d = res.data.orders;
         setOrders(d);
       }).catch(() => {}).finally(() => setLoadingOrders(false));
     }
@@ -311,7 +317,7 @@ export const Profile: React.FC = () => {
                                 </div>
                                 <div className="text-left md:text-right">
                                   <p className="text-xs text-text-muted mb-1 uppercase tracking-wider">Tổng tiền</p>
-                                  <p className="font-serif font-bold text-lg text-primary">{formatPrice(order.total_price)}</p>
+                                  <p className="font-serif font-bold text-lg text-primary">{formatPrice(order.total_price || order.total_amount || 0)}</p>
                                 </div>
                               </div>
                             </div>

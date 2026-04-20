@@ -8,6 +8,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
+import { getProductById } from '../services/products';
 
 interface ProductCardProps {
   product: Product;
@@ -24,22 +25,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { openAuthModal } = useAuthModal();
   const inWishlist = isInWishlist(product.id);
 
-  const hasDiscount = product.sale_price && product.sale_price < product.base_price;
+  const hasDiscount = Boolean(product.sale_price && product.sale_price < product.base_price);
   const discountPercent = hasDiscount
     ? Math.round(((product.base_price - (product.sale_price || 0)) / product.base_price) * 100)
     : 0;
   const displayPrice = product.sale_price || product.base_price;
 
+  const [isAdding, setIsAdding] = React.useState(false);
+
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      // Use first available variant or no variant
-      const variant = product.variants?.find(v => v.is_available) || null;
+      setIsAdding(true);
+      // Fetch full product details to get variants since listing API doesn't include them
+      const res = await getProductById(product.id);
+      const fullProduct: Product = res.data?.data || res.data;
+      
+      // Use first available variant or first variant or no variant from the full product
+      const variant = fullProduct.variants?.find(v => v.is_available) || (fullProduct.variants && fullProduct.variants.length > 0 ? fullProduct.variants[0] : null);
+      
       await addItem(product.id, variant?.id ?? null, 1);
       showNotification(`Đã thêm "${product.name}" vào giỏ hàng`, 'success');
     } catch (err: any) {
       showNotification(err.message || 'Không thể thêm vào giỏ hàng', 'error');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -95,7 +106,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {hasDiscount && (
             <span className="badge-sale">-{discountPercent}%</span>
           )}
-          {product.is_featured && !hasDiscount && (
+          {Boolean(product.is_featured) && !hasDiscount && (
             <span className="badge-new">Nổi bật</span>
           )}
         </div>
