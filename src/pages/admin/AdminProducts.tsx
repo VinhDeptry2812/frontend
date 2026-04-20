@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Loader2, Package, PackageX, Search, Filter, DollarSign, ArrowUpDown, X, Upload, Eye, ChevronLeft, ChevronRight, Calendar, Tag, Layers, Boxes, Percent, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, Package, PackageX, Search, Filter, DollarSign, ArrowUpDown, X, Upload, Eye, ChevronLeft, ChevronRight, Calendar, Tag, Layers, Boxes, Percent, AlertTriangle, Ruler, Scale, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
@@ -163,7 +163,7 @@ export const AdminProducts: React.FC = () => {
   });
   const [variantGalleryPreviews, setVariantGalleryPreviews] = useState<string[]>([]);
   const [variantExistingGallery, setVariantExistingGallery] = useState<any[]>([]);
-  const [showTechnicalFields, setShowTechnicalFields] = useState(false);
+
 
   // Hàm Get chuẩn
   const fetchProducts = async (cursorToFetch: string = cursorHistory[currentPage] || '', isReset: boolean = false) => {
@@ -423,7 +423,7 @@ export const AdminProducts: React.FC = () => {
     });
     setVariantGalleryPreviews([]);
     setVariantExistingGallery([]);
-    setShowTechnicalFields(false);
+
     setIsVariantFormModalOpen(true);
   };
 
@@ -451,7 +451,7 @@ export const AdminProducts: React.FC = () => {
     });
     setVariantGalleryPreviews([]);
     setVariantExistingGallery(v.gallery || []);
-    setShowTechnicalFields(false);
+
     setIsVariantFormModalOpen(true);
   };
 
@@ -1008,6 +1008,7 @@ export const AdminProducts: React.FC = () => {
                         <thead className="bg-slate-100/50 text-slate-500 border-b border-slate-100">
                           <tr>
                             <th className="px-4 py-2 font-bold uppercase">Thuộc tính</th>
+                            <th className="px-4 py-2 font-bold uppercase">Thông số kỹ thuật</th>
                             <th className="px-4 py-2 font-bold uppercase">SKU</th>
                             <th className="px-4 py-2 font-bold uppercase">Giá tùy chỉnh</th>
                             <th className="px-4 py-2 font-bold uppercase text-right">Tồn kho</th>
@@ -1018,6 +1019,22 @@ export const AdminProducts: React.FC = () => {
                             <tr key={v.id || idx} className="hover:bg-slate-100 transition-colors">
                               <td className="px-4 py-3 font-semibold text-slate-700">
                                 {v.color || v.size || v.name || 'Mặc định'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-col gap-1 text-[11px]">
+                                  {(v.width_cm || v.height_cm || v.depth_cm) ? (
+                                    <span className="text-slate-600 font-medium">
+                                      KT: {v.width_cm ? `${v.width_cm}x` : ''}{v.depth_cm ? `${v.depth_cm}x` : ''}{v.height_cm || ''} cm {v.weight_kg ? `| ${v.weight_kg}kg` : ''}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400 italic">Không có KT</span>
+                                  )}
+                                  {(v.wood_type || v.upholstery) && (
+                                    <span className="text-slate-500">
+                                      {v.wood_type} {v.wood_type && v.upholstery ? '-' : ''} {v.upholstery}
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-3 text-slate-400 font-mono italic">
                                 {v.sku || '---'}
@@ -1320,68 +1337,85 @@ export const AdminProducts: React.FC = () => {
                 </label>
               </div>
 
-              {/* Technical Fields Collapsible */}
-              <div className="border border-slate-100 rounded-2xl overflow-hidden bg-slate-50/50">
-                <button 
-                  type="button"
-                  onClick={() => setShowTechnicalFields(!showTechnicalFields)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-slate-100 transition-colors"
-                >
-                  <span className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <Filter size={16} className="text-primary" />
-                    Thông số kỹ thuật chi tiết
-                  </span>
-                  <ChevronRight size={18} className={`text-slate-400 transition-transform ${showTechnicalFields ? 'rotate-90' : ''}`} />
-                </button>
-                
-                {showTechnicalFields && (
-                  <div className="p-4 pt-0 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+              {/* Improved Technical Fields */}
+              <div className="space-y-4 pt-2">
+                {/* Section 1: Materials & Finish */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <div className="bg-slate-50 border-b border-slate-100 p-3 px-4 flex items-center gap-2">
+                    <Palette size={16} className="text-primary" />
+                    <span className="text-sm font-bold text-slate-800">Chất liệu & Cấu tạo</span>
+                  </div>
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Loại khung / Loại gỗ</label>
+                      <input type="text" placeholder="VD: Gỗ Sồi (Oak), Kim loại..." value={variantFormData.wood_type} onChange={e => setVariantFormData({ ...variantFormData, wood_type: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Chất liệu bọc</label>
+                      <input type="text" placeholder="VD: Da bò tót nhập Ý, Nỉ..." value={variantFormData.upholstery} onChange={e => setVariantFormData({ ...variantFormData, upholstery: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Màu sơn / Hoàn thiện</label>
+                      <input type="text" placeholder="VD: Sơn Inchem, Phủ bóng..." value={variantFormData.finish} onChange={e => setVariantFormData({ ...variantFormData, finish: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-1.5">Nhãn kích thước (VD: L, XL)</label>
+                      <input type="text" placeholder="VD: Lớn, Nhỏ, King Size..." value={variantFormData.size} onChange={e => setVariantFormData({ ...variantFormData, size: e.target.value })} className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Dimensions & Weight */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <div className="bg-slate-50 border-b border-slate-100 p-3 px-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Ruler size={16} className="text-amber-500" />
+                      <span className="text-sm font-bold text-slate-800">Kích thước & Khối lượng</span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-3 gap-3 mb-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Loại gỗ</label>
-                        <input type="text" value={variantFormData.wood_type} onChange={e => setVariantFormData({ ...variantFormData, wood_type: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 ml-1">Chiều Rộng (L)</label>
+                        <div className="relative">
+                          <input type="number" min="0" placeholder="0" value={variantFormData.width_cm} onChange={e => setVariantFormData({ ...variantFormData, width_cm: e.target.value })} className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">cm</span>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Chất liệu bọc</label>
-                        <input type="text" value={variantFormData.upholstery} onChange={e => setVariantFormData({ ...variantFormData, upholstery: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 ml-1">Chiều Sâu (W)</label>
+                        <div className="relative">
+                          <input type="number" min="0" placeholder="0" value={variantFormData.depth_cm} onChange={e => setVariantFormData({ ...variantFormData, depth_cm: e.target.value })} className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">cm</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 ml-1">Chiều Cao (H)</label>
+                        <div className="relative">
+                          <input type="number" min="0" placeholder="0" value={variantFormData.height_cm} onChange={e => setVariantFormData({ ...variantFormData, height_cm: e.target.value })} className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">cm</span>
+                        </div>
                       </div>
                     </div>
+                    
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Hoàn thiện (Finish)</label>
-                        <input type="text" value={variantFormData.finish} onChange={e => setVariantFormData({ ...variantFormData, finish: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 ml-1 flex items-center gap-1"><Scale size={14}/> Khối lượng</label>
+                        <div className="relative">
+                          <input type="number" min="0" placeholder="0" value={variantFormData.weight_kg} onChange={e => setVariantFormData({ ...variantFormData, weight_kg: e.target.value })} className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">kg</span>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Kích thước (Size)</label>
-                        <input type="text" value={variantFormData.size} onChange={e => setVariantFormData({ ...variantFormData, size: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Rộng (cm)</label>
-                        <input type="number" min="0" value={variantFormData.width_cm} onChange={e => setVariantFormData({ ...variantFormData, width_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Sâu (cm)</label>
-                        <input type="number" min="0" value={variantFormData.depth_cm} onChange={e => setVariantFormData({ ...variantFormData, depth_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Cao (cm)</label>
-                        <input type="number" min="0" value={variantFormData.height_cm} onChange={e => setVariantFormData({ ...variantFormData, height_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Nặng (kg)</label>
-                        <input type="number" min="0" value={variantFormData.weight_kg} onChange={e => setVariantFormData({ ...variantFormData, weight_kg: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Chiều cao ghế (cm)</label>
-                        <input type="text" value={variantFormData.seat_height_cm} onChange={e => setVariantFormData({ ...variantFormData, seat_height_cm: e.target.value })} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm" />
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5 ml-1 flex items-center gap-1"><Ruler size={14}/> Chiều cao mặt ghế</label>
+                        <div className="relative">
+                          <input type="number" min="0" placeholder="0" value={variantFormData.seat_height_cm} onChange={e => setVariantFormData({ ...variantFormData, seat_height_cm: e.target.value })} className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-slate-400 transition-all" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500">cm</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
