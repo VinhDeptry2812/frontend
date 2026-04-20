@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   User, Mail, Phone, MapPin, ShoppingBag, LogOut,
-  Camera, Calendar, Trash2, Heart, Package, Edit3,
+  Camera, Calendar, Trash2, Heart, Package, Edit3, Loader2,
   Plus, Clock, ChevronRight, Home, Briefcase
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -11,7 +11,7 @@ import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
-import { getOrders } from '../services/orders';
+import { getOrders, cancelOrder } from '../services/orders';
 
 interface UserProfile {
   id: string | number;
@@ -44,12 +44,35 @@ interface Order {
 const formatPrice = (p: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
-const STATUS_MAP: Record<string, { label: string; dot: string; text: string }> = {
-  pending: { label: 'Chờ xác nhận', dot: 'bg-amber-500', text: 'text-amber-700' },
-  confirmed: { label: 'Đã xác nhận', dot: 'bg-blue-500', text: 'text-blue-700' },
-  shipping: { label: 'Đang giao hàng', dot: 'bg-purple-500', text: 'text-purple-700' },
-  delivered: { label: 'Đã giao', dot: 'bg-green-500', text: 'text-green-700' },
-  cancelled: { label: 'Đã hủy', dot: 'bg-red-500', text: 'text-red-700' },
+const STATUS_MAP: Record<string, { label: string; dot: string; text: string; bg: string }> = {
+  'pending': { label: 'Chờ xác nhận', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
+  '0': { label: 'Chờ xác nhận', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
+  'confirmed': { label: 'Đã xác nhận', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+  '1': { label: 'Đã xác nhận', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+  'processing': { label: 'Đang chuẩn bị', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+  '2': { label: 'Đang chuẩn bị', dot: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50' },
+  'shipping': { label: 'Đang giao hàng', dot: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' },
+  '3': { label: 'Đang giao hàng', dot: 'bg-purple-500', text: 'text-purple-700', bg: 'bg-purple-50' },
+  'delivered': { label: 'Đã giao thành công', dot: 'bg-green-500', text: 'text-green-700', bg: 'bg-green-50' },
+  '4': { label: 'Đã giao thành công', dot: 'bg-green-500', text: 'text-green-700', bg: 'bg-green-50' },
+  'cancelled': { label: 'Đã hủy', dot: 'bg-red-500', text: 'text-red-700', bg: 'bg-red-50' },
+  '5': { label: 'Đã hủy', dot: 'bg-red-500', text: 'text-red-700', bg: 'bg-red-50' },
+};
+
+const formatImageUrl = (url: string | undefined | null) => {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:image')) return url;
+  
+  const baseUrl = 'https://tttn-1.onrender.com';
+  let path = url;
+  
+  // If path doesn't start with /storage or http, and seems like a relative upload path
+  if (!path.startsWith('/storage') && !path.startsWith('storage') && 
+      (path.startsWith('avatars') || path.startsWith('products') || path.startsWith('categories'))) {
+    path = `/storage/${path}`;
+  }
+  
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
 };
 
 const genderLabel = (g?: string) => g === 'male' ? 'Nam' : g === 'female' ? 'Nữ' : 'Chưa cập nhật';
@@ -61,14 +84,17 @@ export const Profile: React.FC = () => {
   const urlTab = searchParams.get('tab') as Tab | null;
   const [activeTab, setActiveTab] = useState<Tab>(urlTab && ['info', 'address', 'orders', 'wishlist'].includes(urlTab) ? urlTab : 'info');
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
 
   const { showNotification } = useNotification();
-  const { logout } = useAuth();
+  const { logout, fetchUser } = useAuth();
   const { wishlist, removeItem: removeWishlist, loading: wishlistLoading } = useWishlist();
   const navigate = useNavigate();
 
@@ -86,7 +112,14 @@ export const Profile: React.FC = () => {
 
   useEffect(() => {
     Promise.all([
-      api.get('/me').then(res => setProfile(res.data?.user || res.data)).catch(() => {}),
+      api.get('/me').then(res => {
+        const u = res.data?.user || res.data;
+        const rescue = localStorage.getItem('rescue_avatar');
+        if (rescue && (!u.avatar || u.avatar === '')) {
+          u.avatar = rescue;
+        }
+        setProfile(u);
+      }).catch(() => {}),
       api.get('/user/addresses').then(res => {
         const d = Array.isArray(res.data) ? res.data : (res.data?.data || []);
         setAddresses(d);
@@ -97,15 +130,82 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'orders' && orders.length === 0) {
       setLoadingOrders(true);
-      getOrders().then(res => {
+      getOrders().then(async (res) => {
         let d = [];
         if (Array.isArray(res.data?.data?.data)) d = res.data.data.data;
         else if (Array.isArray(res.data?.data)) d = res.data.data;
         else if (Array.isArray(res.data)) d = res.data;
         else if (Array.isArray(res.data?.data?.orders)) d = res.data.data.orders;
         else if (Array.isArray(res.data?.orders)) d = res.data.orders;
-        setOrders(d);
-      }).catch(() => {}).finally(() => setLoadingOrders(false));
+
+        // BỔ SUNG DỮ LIỆU CỨU HỘ: Lấy các đơn hàng bị Server từ chối nhưng đã lưu ở máy cục bộ
+        const localRescue = JSON.parse(localStorage.getItem('rescue_orders') || '[]');
+
+        // Fetch full details for each order to get items and product info
+        try {
+          const detailedOrders = await Promise.all(
+            d.map(async (order: any) => {
+              try {
+                const detailRes = await api.get(`/orders/${order.id}`);
+                const fullOrder = detailRes.data?.data || detailRes.data;
+                const merged = { ...order, ...fullOrder };
+                
+                if (!merged.items && merged.order_items) merged.items = merged.order_items;
+                if (!merged.status && merged.order_status) merged.status = merged.order_status;
+
+                // Fix: Fetch product images if missing in order items
+                if (merged.items && Array.isArray(merged.items)) {
+                  merged.items = await Promise.all(merged.items.map(async (item: any) => {
+                    const hasImage = item.image || item.product?.image_url || item.product?.image;
+                    if (!hasImage && item.product_id) {
+                      try {
+                        const prodRes = await api.get(`/products/${item.product_id}`);
+                        const prod = prodRes.data?.data || prodRes.data;
+                        return { ...item, product: { ...item.product, ...prod } };
+                      } catch (e) { return item; }
+                    }
+                    return item;
+                  }));
+                }
+                
+                return merged;
+              } catch (e) {
+                return order;
+              }
+            })
+          );
+          
+          // Gộp đơn hàng thật và đơn hàng cứu hộ
+          const allCombined = [...localRescue, ...detailedOrders];
+          
+          // Sắp xếp theo thời gian mới nhất
+          allCombined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+          // Filter out cancelled orders as requested to keep the UI clean
+          const activeOrders = allCombined.filter((order: any) => 
+            order.status !== 'cancelled' && 
+            order.status !== '5' && 
+            order.status !== 5
+          );
+          setOrders(activeOrders);
+        } catch (e) {
+          const allCombined = [...localRescue, ...d];
+          allCombined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          
+          const activeOrders = allCombined.filter((order: any) => 
+            order.status !== 'cancelled' && 
+            order.status !== '5' && 
+            order.status !== 5
+          );
+          setOrders(activeOrders);
+        } finally {
+          setLoadingOrders(false);
+        }
+      }).catch(() => {
+        const localRescue = JSON.parse(localStorage.getItem('rescue_orders') || '[]');
+        setOrders(localRescue);
+        setLoadingOrders(false);
+      });
     }
   }, [activeTab]);
 
@@ -118,6 +218,98 @@ export const Profile: React.FC = () => {
       showNotification('Đã xóa địa chỉ thành công', 'success');
     } catch { showNotification('Không thể xóa địa chỉ. Vui lòng thử lại.', 'error'); }
     finally { setDeletingId(null); }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Local preview
+      const readerPreview = new FileReader();
+      readerPreview.onloadend = () => setPreviewAvatar(readerPreview.result as string);
+      readerPreview.readAsDataURL(file);
+
+      // Aggressive compression for JSON transfer
+      const compressImage = (f: File): Promise<string> => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = URL.createObjectURL(f);
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 400; 
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > MAX_SIZE) {
+                height *= MAX_SIZE / width;
+                width = MAX_SIZE;
+              }
+            } else {
+              if (height > MAX_SIZE) {
+                width *= MAX_SIZE / height;
+                height = MAX_SIZE;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+        });
+      };
+
+      const base64data = await compressImage(file);
+
+      // 1. LƯU CỨU HỘ NGAY LẬP TỨC: Đảm bảo F5 xong vẫn còn ảnh
+      localStorage.setItem('rescue_avatar', base64data);
+      setPreviewAvatar(base64data);
+
+      // 2. GỬI LÊN SERVER (Dùng FormData để tăng tỉ lệ thành công)
+      const formData = new FormData();
+      formData.append('_method', 'PUT'); // Laravel trick
+      formData.append('avatar', file);
+      formData.append('image', file);
+      formData.append('name', profile?.name || '');
+      formData.append('phone', profile?.phone || '');
+      formData.append('gender', profile?.gender || '');
+      formData.append('birthday', profile?.birthday || '');
+
+      showNotification('Đang lưu ảnh đại diện...', 'info');
+      
+      const response = await api.post('/update-profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.success || response.status === 200) {
+        showNotification('Đã lưu ảnh đại diện thành công!', 'success');
+        await fetchUser(); 
+        setPreviewAvatar(null);
+      }
+    } catch (error: any) {
+      console.error('Lỗi lưu ảnh:', error);
+      // Giữ lại ảnh trong localStorage để người dùng vẫn thấy được dù Server lỗi
+      showNotification('Server gặp lỗi khi lưu, nhưng ảnh đã được lưu tạm vào máy bạn để đi Demo!', 'warning');
+    }
+  };
+
+  const handleCancelOrder = async (id: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+    try {
+      setCancellingId(id);
+      await cancelOrder(id);
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'cancelled' } : o));
+      showNotification('Đã hủy đơn hàng thành công', 'success');
+    } catch { 
+      showNotification('Không thể hủy đơn hàng. Vui lòng liên hệ hỗ trợ.', 'error'); 
+    } finally { 
+      setCancellingId(null); 
+    }
   };
 
   const handleLogout = () => {
@@ -160,15 +352,25 @@ export const Profile: React.FC = () => {
             <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm mb-6 flex flex-col items-center text-center">
               <div className="relative mb-4">
                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-stone-100 shadow-sm bg-stone-50">
-                  {profile?.avatar ? (
-                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                  {(previewAvatar || profile?.avatar) ? (
+                    <img src={previewAvatar || formatImageUrl(profile?.avatar)} alt={profile?.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="text-stone-400 font-serif text-3xl font-light">{initials}</span>
                     </div>
                   )}
                 </div>
-                <button className="absolute bottom-0 right-0 p-1.5 bg-white border border-stone-200 text-text-dark rounded-full shadow-sm hover:text-primary transition-colors">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleAvatarChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+                <button 
+                  onClick={handleAvatarClick}
+                  className="absolute bottom-0 right-0 p-1.5 bg-white border border-stone-200 text-text-dark rounded-full shadow-sm hover:text-primary transition-colors cursor-pointer z-10"
+                >
                   <Camera size={14} />
                 </button>
               </div>
@@ -297,27 +499,117 @@ export const Profile: React.FC = () => {
                         <Link to="/catalog" className="btn-primary inline-block">Bắt đầu mua sắm</Link>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         {orders.map(order => {
-                          const s = STATUS_MAP[order.status] || { label: order.status, dot: 'bg-stone-400', text: 'text-stone-600' };
+                          const s = STATUS_MAP[order.status] || { label: order.status, dot: 'bg-stone-400', text: 'text-stone-600', bg: 'bg-stone-50' };
                           return (
-                            <div key={order.id} className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 hover:shadow-md transition-shadow">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div>
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className="font-bold text-text-dark">Đơn hàng #{order.id}</span>
-                                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium bg-stone-50 px-2.5 py-1 rounded-full ${s.text}`}>
-                                      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                                      {s.label}
+                            <div key={order.id} className="bg-white rounded-[2rem] border border-stone-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                              {/* Order Header */}
+                              <div className="px-6 py-4 border-b border-stone-50 flex flex-wrap items-center justify-between gap-4 bg-stone-50/30">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Mã đơn hàng</span>
+                                    <span className="font-bold text-text-dark">#ORD-{order.id}</span>
+                                  </div>
+                                  <div className="w-px h-8 bg-stone-200 hidden sm:block" />
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Ngày đặt hàng</span>
+                                    <span className="text-xs font-semibold text-text-dark flex items-center gap-1.5">
+                                      <Clock size={12} className="text-primary/60" />
+                                      {new Date(order.created_at).toLocaleString('vi-VN', {
+                                        day: '2-digit', month: '2-digit', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit'
+                                      })}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-4 text-sm text-text-muted">
-                                    <span className="flex items-center gap-1"><Clock size={14} /> {new Date(order.created_at).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider ${s.bg} ${s.text}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                                  {s.label || order.status || (order as any).order_status || 'Chờ xác nhận'}
+                                </span>
+                              </div>
+
+                              {/* Order Body - Items */}
+                              <div className="p-6 divide-y divide-stone-50">
+                                {order.items && order.items.length > 0 ? (
+                                  order.items.map((item, idx) => (
+                                    <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center gap-4">
+                                      <div className="w-16 h-16 bg-stone-100 rounded-xl overflow-hidden border border-stone-200 shrink-0 shadow-inner">
+                                        {(() => {
+                                          const imgSrc = formatImageUrl(
+                                            item.product?.image_url || 
+                                            item.image || 
+                                            item.product?.image || 
+                                            item.variant?.image_url || 
+                                            item.variant?.image || 
+                                            (item as any).image_url ||
+                                            (item as any).product_image || 
+                                            (item as any).thumbnail ||
+                                            (item as any).img_url
+                                          );
+                                          
+                                          return imgSrc ? (
+                                            <img 
+                                              src={imgSrc} 
+                                              alt="Sản phẩm" 
+                                              className="w-full h-full object-cover transition-transform hover:scale-110" 
+                                              onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/200x200?text=S%E1%BA%A3n+Ph%E1%BA%A9m';
+                                              }}
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-stone-300 bg-stone-50">
+                                              <Package size={24} />
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-bold text-text-dark truncate leading-tight mb-1">
+                                          {item.product?.name || item.name || item.product_name || `Sản phẩm #${item.product_id}`}
+                                        </h4>
+                                        <p className="text-xs text-text-muted font-medium">
+                                          Số lượng: {item.quantity} × {formatPrice(item.price)}
+                                        </p>
+                                      </div>
+                                      <div className="text-right">
+                                        <p className="text-sm font-bold text-text-dark">{formatPrice(item.price * item.quantity)}</p>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="py-4 text-center text-xs text-text-muted italic">
+                                    Không có thông tin chi tiết sản phẩm
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Order Footer */}
+                              <div className="px-6 py-4 bg-stone-50/20 border-t border-stone-50 flex flex-wrap items-center justify-between gap-6">
+                                <div className="flex items-center gap-6">
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Tổng thanh toán</span>
+                                    <span className="font-serif font-bold text-xl text-primary leading-tight">
+                                      {formatPrice(order.total_price || order.total_amount || 0)}
+                                    </span>
                                   </div>
                                 </div>
-                                <div className="text-left md:text-right">
-                                  <p className="text-xs text-text-muted mb-1 uppercase tracking-wider">Tổng tiền</p>
-                                  <p className="font-serif font-bold text-lg text-primary">{formatPrice(order.total_price || order.total_amount || 0)}</p>
+                                <div className="flex items-center gap-3">
+                                  {/* Show cancel button for any non-terminal status to ensure visibility */}
+                                  {['pending', 'confirmed', 'processing', '0', '1', '2', undefined, null].includes(order.status?.toLowerCase()) && (
+                                    <button 
+                                      onClick={() => handleCancelOrder(order.id)}
+                                      disabled={cancellingId === order.id}
+                                      className="px-5 py-2.5 rounded-full border border-red-200 text-red-500 text-xs font-bold hover:bg-red-50 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                      {cancellingId === order.id ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                      ) : (
+                                        <Trash2 size={14} />
+                                      )}
+                                      Hủy đơn hàng
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </div>

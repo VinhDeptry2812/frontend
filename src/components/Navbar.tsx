@@ -8,6 +8,17 @@ import { useWishlist } from '../context/WishlistContext';
 import { getCategories } from '../services/categories';
 import { Category } from '../types';
 
+const formatImageUrl = (url: string | undefined | null) => {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:image')) return url;
+  const baseUrl = 'https://tttn-1.onrender.com';
+  // If the path already has storage in it, don't add it again
+  if (url.includes('storage/')) {
+     return `${baseUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
+  }
+  return `${baseUrl}/storage/${url.startsWith('/') ? url.slice(1) : url}`;
+};
+
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -212,7 +223,7 @@ export const Navbar: React.FC = () => {
                   }`}
               >
                 {user?.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full object-cover" />
+                  <img src={formatImageUrl(user.avatar)} alt={user.name} className="w-6 h-6 rounded-full object-cover" />
                 ) : (
                   <User size={20} />
                 )}

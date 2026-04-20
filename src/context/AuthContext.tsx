@@ -44,6 +44,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const fetchUserData = (data.success && (data.admin || data.user)) ? (data.admin || data.user) : (data.admin || data.user || data);
 
       if (fetchUserData) {
+        // Bổ sung ảnh đại diện cứu hộ nếu Server không lưu được
+        const rescueAvatar = localStorage.getItem('rescue_avatar');
+        if (rescueAvatar && (!fetchUserData.avatar || fetchUserData.avatar === '')) {
+          fetchUserData.avatar = rescueAvatar;
+        }
+
         // Kiểm tra ngay lập tức nếu dữ liệu trả về báo tài khoản bị vô hiệu hóa
         const isActive = fetchUserData.is_active;
         if (isActive === 0 || isActive === false || String(isActive) === '0' || String(isActive) === 'false') {

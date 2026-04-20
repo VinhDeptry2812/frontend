@@ -81,7 +81,7 @@ export const CartSidebar: React.FC = () => {
                   {items.map((item) => {
                     const product = item.product;
                     const variant = item.variant;
-                    const price = variant?.price ?? product?.base_price ?? 0;
+                    const price = variant?.price || product?.sale_price || product?.base_price || ((item as any).subtotal ? (item as any).subtotal / item.quantity : 0);
                     const image = variant?.image_url || product?.image_url || '';
                     const name = product?.name || 'Sản phẩm';
 
